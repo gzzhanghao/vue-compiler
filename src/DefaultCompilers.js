@@ -1,12 +1,9 @@
-import Path from 'path'
-import Less from 'less'
-import Promisify from 'es6-promisify'
-import { transform as BabelTransform } from 'babel-core'
-
 export default {
 
   babel(filePath, content, options) {
-    return BabelTransform(content, Object.assign({
+    const Babel = require('babel-core')
+
+    return Babel.transform(content, Object.assign({
 
       filename: filePath,
       sourceMaps: true,
@@ -15,6 +12,8 @@ export default {
   },
 
   less(filePath, content, options) {
+    const Less = require('less')
+
     return Less.render(content, Object.assign({
 
       filename: filePath,
