@@ -20,7 +20,7 @@ const defaultResolverOptions = {
  * @return {Function} Resolve function
  */
 export default function GetResolver(options_) {
-  const options = Object.assign({}, defaultResolverOptions, options_.resolver)
+  const options = Object.assign({}, defaultResolverOptions, options_)
 
   const resolver = ResolverFactory.createResolver(options)
   const resolve = Promisify(resolver.resolve, resolver)

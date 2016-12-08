@@ -59,7 +59,7 @@ export default async function compile(filePath, content, options_) {
   options.compilers = Object.assign({}, DefaultCompilers, options.compilers)
 
   if (!options.resolve) {
-    options.resolve = GetResolver(options)
+    options.resolve = GetResolver(options.resolver)
   }
 
   if (components.template) {

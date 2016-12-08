@@ -36,13 +36,16 @@ compile('index.vue', content, options).then(res => {
 Here are some available options:
 
 - compilers
-- resolver
 - resolve
+- resolver
+- babel
+- less
 - includeFileName
 - showDevHints
-- cleanCSS
 - extractStyles
+- postcss
+- cssnano
+- styleSourceMap
+- sourceMapRoot
 - styleLoader
 - sourceMap
-- sourceMapRoot
-- styleSourceMap
