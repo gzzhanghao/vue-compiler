@@ -35,7 +35,7 @@ const defaultOptions = {
 
   extractStyles: false,
 
-  styleLoader: 'seajs.loadStyle',
+  styleLoader: 'loadStyle',
 
   sourceMap: false,
 
@@ -233,7 +233,7 @@ async function generate(filePath, components, content, options) {
         let postcssMapOpts = false
 
         if (options.styleSourceMap) {
-          postcssMapOpts = { inline: false, annotation: false, prev: node.toStringWithSourceMap().map.toString() }
+          postcssMapOpts = { inline: false, annotation: false, prev: node.toStringWithSourceMap().map.toJSON() }
         }
 
         const result = await PostCSS(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: filePath, to: filePath })
@@ -241,7 +241,7 @@ async function generate(filePath, components, content, options) {
         if (!options.styleSourceMap) {
           node = new SourceNode(null, null, node.source, result.css)
         } else {
-          node = SourceNode.fromStringWithSourceMap(result.css, new SourceMapConsumer(result.map.toString()))
+          node = SourceNode.fromStringWithSourceMap(result.css, new SourceMapConsumer(result.map.toJSON()))
         }
       }
 
