@@ -1,5 +1,5 @@
 {
-  "name": "vue-compiler",
+  "name": "@gzzhanghao/vue-compiler",
   "version": "0.1.0",
   "main": "lib",
   "scripts": {
