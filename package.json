@@ -41,5 +41,8 @@
     "url": "https://github.com/gzzhanghao/vue-component-compiler/issues"
   },
   "homepage": "https://github.com/gzzhanghao/vue-component-compiler#readme",
-  "description": "A standalone vue component compiler"
+  "description": "A standalone vue component compiler",
+  "bin": {
+    "vue-compile": "./bin/vue-compile.js"
+  }
 }
