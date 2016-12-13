@@ -38,7 +38,7 @@ const options = {
 
   // Custom compilers for other languages
   compilers: {
-    
+
     // Compiler for specific language, returns a Promise with transpile result
     // (filePath: string, content: string, options: Object) => Promise
     ts(filePath, content, options) {
