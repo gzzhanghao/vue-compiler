@@ -31,7 +31,13 @@ const defaultOptions = {
 
   showDevHints: false,
 
-  cleanCSS: false,
+  babel: false,
+
+  less: false,
+
+  postcss: false,
+
+  cssnano: false,
 
   extractStyles: false,
 
@@ -52,7 +58,7 @@ const defaultOptions = {
  * @param {Object} options_
  * @return {Object} Compile result
  */
-export default async function compile(filePath, content, options_) {
+export default async function Compile(filePath, content, options_) {
   const options = Object.assign({}, defaultOptions, options_)
   const components = VueCompiler.parseComponent(content, { pad: true })
 
@@ -74,6 +80,7 @@ export default async function compile(filePath, content, options_) {
     const defaultLang = options.babel ? 'babel' : 'javascript'
     promises[0] = processItem(filePath + '?script', components.script, defaultLang, options)
   }
+
 
   if (components.template) {
     promises[1] = processItem(filePath + '?template', components.template, 'html', options).then(compileHtml)
@@ -341,11 +348,23 @@ async function processItem(filePath, item, defaultLang, options) {
   item.content = await getContent(filePath, item, options)
 
   if (!compile) {
-    const lines = item.content.split('\n').map((content, line) => {
-      return new SourceNode((item.line || 1) + line, line ? 0 : item.column, filePath, content)
-    })
+    const lines = item.content.split('\n')
 
-    item.node = new SourceNode(null, null, filePath, lines)
+    item.node = new SourceNode(null, null, filePath, lines.map((content, line) => {
+      let lineEnding = ''
+
+      if (line + 1 < lines.length) {
+        lineEnding = '\n'
+      }
+
+      return new SourceNode(
+        (item.line || 1) + line,
+        line ? 0 : item.column,
+        filePath,
+        content + lineEnding
+      )
+    }))
+
     item.node.setSourceContent(filePath, item.content)
 
     return item

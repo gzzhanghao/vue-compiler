@@ -17,6 +17,7 @@ export default {
     return Less.render(content, Object.assign({
 
       filename: filePath,
+      paths: [options.resolve.context],
       sourceMap: options.keepStyleSourceMap ? {} : false,
 
     }, options.less)).then(res => {
