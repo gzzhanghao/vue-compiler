@@ -1,16 +1,12 @@
 {
   "name": "@gzzhanghao/vue-compiler",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "lib",
   "scripts": {
     "watch": "babel src -d lib --watch",
     "build": "babel src -d lib",
     "prepublish": "npm run build"
   },
-  "files": [
-    "lib",
-    "bin"
-  ],
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
   "dependencies": {
