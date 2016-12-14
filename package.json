@@ -1,6 +1,6 @@
 {
   "name": "@gzzhanghao/vue-compiler",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "lib",
   "scripts": {
     "watch": "babel src -d lib --watch",
