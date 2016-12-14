@@ -8,7 +8,8 @@
     "prepublish": "npm run build"
   },
   "files": [
-    "lib"
+    "lib",
+    "bin"
   ],
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
