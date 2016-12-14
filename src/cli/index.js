@@ -51,7 +51,7 @@ async function onChange(file) {
   try {
 
     const relPath = relative(args._[0], file).replace(/\\/g, '/')
-    const destPath = join(args._[1], relPath + '.js')
+    const destPath = join(args._[1], relPath + (args.extension || '.js'))
 
     const source = await readFile(file, 'utf-8')
 
