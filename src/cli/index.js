@@ -1,5 +1,6 @@
 import Fs from 'fs'
 import Mkp from 'mkdirp'
+import Rename from 'rename'
 import Chokidar from 'chokidar'
 import Minimist from 'minimist'
 import Promisify from 'es6-promisify'
@@ -51,7 +52,7 @@ async function onChange(file) {
   try {
 
     const relPath = relative(args._[0], file).replace(/\\/g, '/')
-    const destPath = join(args._[1], relPath + (args.extension || '.js'))
+    const destPath = join(args._[1], Rename(relPath, { extname: args.extension || '.js' }))
 
     const source = await readFile(file, 'utf-8')
 
