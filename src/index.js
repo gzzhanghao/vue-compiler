@@ -109,12 +109,12 @@ async function generate(filePath, components, content, options) {
    */
 
   if (components.script) {
-    if (component.script.src) {
+    if (components.script.src) {
       rootNode.add(['exports = module.exports = ', components.script.node, '\n'])
     } else {
       rootNode.add(['(function(){\n', components.script.node, '\n})()\n'])
     }
-    warnings = warnings.concat(components.script.warnings)
+    warnings = warnings.concat(components.script.warnings || [])
   }
 
   /**
@@ -157,7 +157,7 @@ async function generate(filePath, components, content, options) {
       '__vue_options__.render = __vue_template__.render\n',
       '__vue_options__.staticRenderFns = __vue_template__.staticRenderFns\n',
     ])
-    warnings = warnings.concat(components.template.warnings)
+    warnings = warnings.concat(components.template.warnings || [])
   }
 
   /**
@@ -172,11 +172,12 @@ async function generate(filePath, components, content, options) {
     }
 
     for (const style of components.styles) {
+
       let node = style.node
       let postcssPlugins = []
 
       if (style.src) {
-        rootNode.add([options.styleLoader, '(', style.node, ')\n'])
+        rootNode.add([node, '\n'])
         continue
       }
 
@@ -264,14 +265,14 @@ async function generate(filePath, components, content, options) {
         extractedStyles.push({ code: node.toString() })
       }
 
-      warnings = warnings.concat(style.warnings)
+      warnings = warnings.concat(style.warnings || [])
     }
 
     /**
      * Bundle styles
      */
 
-    if (!options.extractStyles) {
+    if (styleNode.children.length) {
       rootNode.add([options.styleLoader, '('])
       if (options.styleSourceMap) {
         const result = styleNode.toStringWithSourceMap({ sourceRoot: options.sourceMapRoot })

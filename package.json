@@ -1,11 +1,11 @@
 {
   "name": "@gzzhanghao/vue-compiler",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "main": "lib",
   "scripts": {
     "watch": "babel src -d lib --watch",
     "build": "babel src -d lib",
-    "prepublish": "npm run build"
+    "postinstall": "npm run build"
   },
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
@@ -14,7 +14,6 @@
     "babel-core": "^6.18.2",
     "chokidar": "^1.6.1",
     "cssnano": "^3.8.1",
-    "enhanced-resolve": "^3.0.0",
     "es6-promisify": "^5.0.0",
     "hash-sum": "^1.0.2",
     "less": "^2.7.1",
@@ -29,7 +28,7 @@
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-plugin-transform-async-to-generator": "^6.16.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0"
+    "babel-preset-env": "^1.5.2"
   },
   "repository": {
     "type": "git",
