@@ -10,19 +10,4 @@ export default {
 
     }, options.babel))
   },
-
-  less(filePath, content, options) {
-    const Less = require('less')
-
-    return Less.render(content, Object.assign({
-
-      filename: filePath,
-      paths: [options.resolve.context],
-      sourceMap: options.keepStyleSourceMap ? {} : false,
-
-    }, options.less)).then(res => {
-
-      return { code: res.css, map: res.map }
-    })
-  },
 }
