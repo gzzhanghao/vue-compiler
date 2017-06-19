@@ -10,7 +10,6 @@ import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
 import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 
 import GenId from './GenId'
-import GetResolver from './GetResolver'
 import PostCSSScope from './PostCSSScope'
 import DefaultCompilers from './DefaultCompilers'
 
@@ -22,10 +21,6 @@ const readFile = Promisify(Fs.readFile)
 const defaultOptions = {
 
   compilers: DefaultCompilers,
-
-  resolver: {},
-
-  resolve: null,
 
   includeFileName: false,
 
@@ -63,10 +58,6 @@ export default async function Compile(filePath, content, options_) {
   const components = VueCompiler.parseComponent(content, { pad: true })
 
   options.compilers = Object.assign({}, DefaultCompilers, options.compilers)
-
-  if (!options.resolve) {
-    options.resolve = GetResolver(options.resolver)
-  }
 
   if (components.template) {
     const leading = content.slice(0, components.template.start).split('\n')
@@ -118,7 +109,11 @@ async function generate(filePath, components, content, options) {
    */
 
   if (components.script) {
-    rootNode.add(['(function(){\n', components.script.node, '\n})()\n'])
+    if (component.script.src) {
+      rootNode.add(['exports = module.exports = ', components.script.node, '\n'])
+    } else {
+      rootNode.add(['(function(){\n', components.script.node, '\n})()\n'])
+    }
     warnings = warnings.concat(components.script.warnings)
   }
 
@@ -179,6 +174,11 @@ async function generate(filePath, components, content, options) {
     for (const style of components.styles) {
       let node = style.node
       let postcssPlugins = []
+
+      if (style.src) {
+        rootNode.add([options.styleLoader, '(', style.node, ')\n'])
+        continue
+      }
 
       if (options.postcss) {
         postcssPlugins = options.postcss.slice(1)
@@ -341,11 +341,20 @@ async function generate(filePath, components, content, options) {
  * @return {Object} The component item
  */
 async function processItem(filePath, item, defaultLang, options) {
+
+  if (item.src) {
+    item.node = new SourceNode(
+      item.line || 1,
+      item.column,
+      filePath,
+      `require(${JSON.stringify(item.src)})`
+    )
+    return item
+  }
+
   const compile = options.compilers[item.lang || defaultLang]
 
   item.warnings = []
-
-  item.content = await getContent(filePath, item, options)
 
   if (!compile) {
     const lines = item.content.split('\n')
@@ -383,20 +392,6 @@ async function processItem(filePath, item, defaultLang, options) {
   item.node.setSourceContent(filePath, item.content)
 
   return item
-}
-
-/**
- * Get content of an item
- *
- * @param {Object} item
- * @param {Object} options
- * @return {string} Content of the item
- */
-async function getContent(filePath, item, options) {
-  if (!item.src) {
-    return item.content
-  }
-  return readFile(await options.resolve(Path.dirname(filePath), item.src, options), 'utf-8')
 }
 
 /**

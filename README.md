@@ -47,16 +47,6 @@ const options = {
     },
   },
 
-  // Options for the resolver to resolves src requests
-  resolver: {
-    context: process.cwd(),
-    // checkout webpack's configuration/resolve section for more available options
-  },
-
-  // Or you can pass in a resolve method directly
-  // (dirname: string, request: string) => Promise
-  resolve: null,
-
   // Enable babel, it also accepts an option object
   // When truthy, compiler will compile script tags' content with babel by default
   babel: false,
