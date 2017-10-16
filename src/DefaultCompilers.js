@@ -6,6 +6,7 @@ export default {
     return Babel.transform(content, Object.assign({
 
       filename: filePath,
+      sourceFileName: filePath,
       sourceMaps: true,
 
     }, options.babel))
