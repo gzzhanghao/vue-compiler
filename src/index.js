@@ -220,7 +220,7 @@ async function generate(filePath, components, content, options) {
 
       if (style.scoped) {
         if (!scopeId) {
-          scopeId = GenId(filePath)
+          scopeId = `v${GenId(filePath)}`
         }
         postcssPlugins.push(PostCSSScope({ scopeId }))
       }
