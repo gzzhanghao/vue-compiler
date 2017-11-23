@@ -72,7 +72,6 @@ export default async function Compile(filePath, content, options_) {
     promises[0] = processItem(filePath + '?script', components.script, defaultLang, options)
   }
 
-
   if (components.template) {
     promises[1] = processItem(filePath + '?template', components.template, 'html', options).then(compileHtml)
   }
@@ -101,7 +100,6 @@ async function generate(filePath, components, content, options) {
 
   let warnings = []
 
-  let modules = null
   let scopeId = null
 
   /**
@@ -165,7 +163,9 @@ async function generate(filePath, components, content, options) {
    */
 
   if (components.styles.length) {
+
     let styleNode = null
+    let modules = null
 
     if (!options.extractStyles) {
       styleNode = new SourceNode(null, null, filePath)
@@ -182,7 +182,7 @@ async function generate(filePath, components, content, options) {
       }
 
       if (options.postcss) {
-        postcssPlugins = options.postcss.slice(1)
+        postcssPlugins = options.postcss.slice()
       }
 
       /**
@@ -272,7 +272,7 @@ async function generate(filePath, components, content, options) {
      * Bundle styles
      */
 
-    if (styleNode.children.length) {
+    if (!options.extractStyles) {
       rootNode.add([options.styleLoader, '('])
       if (options.styleSourceMap) {
         const result = styleNode.toStringWithSourceMap({ sourceRoot: options.sourceMapRoot })
@@ -280,6 +280,10 @@ async function generate(filePath, components, content, options) {
       } else {
         rootNode.add(JSON.stringify(styleNode.toString()))
       }
+      if (!scopeId) {
+        scopeId = `v${GenId(filePath)}`
+      }
+      rootNode.add([', ', JSON.stringify(scopeId)])
       rootNode.add(')\n')
     }
 
@@ -324,6 +328,10 @@ async function generate(filePath, components, content, options) {
   }
 
   result.warnings = warnings
+
+  if (scopeId) {
+    result.scopeId = scopeId
+  }
 
   if (options.extractStyles) {
     result.styles = extractedStyles
