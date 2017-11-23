@@ -98,6 +98,7 @@ async function generate(filePath, components, content, options) {
 
   let warnings = []
 
+  let hasScopedStyles = false
   let scopeId = null
 
   /**
@@ -220,6 +221,7 @@ async function generate(filePath, components, content, options) {
         if (!scopeId) {
           scopeId = `v${GenId(filePath)}`
         }
+        hasScopedStyles = true
         postcssPlugins.push(PostCSSScope({ scopeId }))
       }
 
@@ -289,7 +291,7 @@ async function generate(filePath, components, content, options) {
      * Meta data
      */
 
-    if (scopeId) {
+    if (hasScopedStyles) {
       rootNode.add(['__vue_options__._scopeId = ', JSON.stringify(scopeId), '\n'])
     }
 
