@@ -3,7 +3,7 @@ import Path from 'path'
 import CSSNano from 'cssnano'
 import PostCSS from 'postcss'
 import Promisify from 'es6-promisify'
-import PostCSSModules from '@gzzhanghao/postcss-modules'
+import PostCSSModules from 'postcss-modules'
 
 import * as VueCompiler from 'vue-template-compiler'
 import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
