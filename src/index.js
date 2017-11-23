@@ -28,8 +28,6 @@ const defaultOptions = {
 
   babel: false,
 
-  less: false,
-
   postcss: false,
 
   cssnano: false,
