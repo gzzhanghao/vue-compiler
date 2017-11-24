@@ -57,12 +57,6 @@ export default async function Compile(filePath, content, options_) {
 
   options.compilers = Object.assign({}, DefaultCompilers, options.compilers)
 
-  if (components.template) {
-    const leading = content.slice(0, components.template.start).split('\n')
-    components.template.line = leading.length
-    components.template.column = leading[leading.length - 1].length + 1
-  }
-
   const promises = [null, null, null]
 
   if (components.script) {
@@ -71,6 +65,11 @@ export default async function Compile(filePath, content, options_) {
   }
 
   if (components.template) {
+    const leading = content.slice(0, components.template.start).split('\n')
+
+    components.template.line = leading.length
+    components.template.column = leading[leading.length - 1].length + 1
+
     promises[1] = processItem(filePath + '?template', components.template, 'html', options).then(compileHtml)
   }
 
@@ -138,10 +137,14 @@ async function generate(filePath, components, content, options) {
       'if (__vue_exports__.__esModule && Object.keys(__vue_exports__).some(function(key) { return key !== "default" && key !== "__esModule" })) {\n',
       `  console.error("[vue-compiler]", ${JSON.stringify(filePath)}, ": Named exports are not supported in *.vue files.")\n`,
       '}\n',
-      'if (__vue_options__.functional) {\n',
-      `  console.error("[vue-compiler]", ${JSON.stringify(filePath)}, ": Functional components are not supported and should be defined in plain js files using render functions.")\n`,
-      '}\n',
     ])
+    if (components.template && !components.template.attrs.functional) {
+      rootNode.add([
+        'if (__vue_options__.functional) {\n',
+        `  console.error("[vue-compiler]", ${JSON.stringify(filePath)}, ": Functional property should be defined on the <template> tag.")\n`,
+        '}\n',
+      ])
+    }
   }
 
   /**
@@ -154,6 +157,9 @@ async function generate(filePath, components, content, options) {
       '__vue_options__.render = __vue_template__.render\n',
       '__vue_options__.staticRenderFns = __vue_template__.staticRenderFns\n',
     ])
+    if (components.template.attrs.functional) {
+      rootNode.add('__vue_options__.functional = true\n')
+    }
     warnings = warnings.concat(components.template.warnings || [])
   }
 
@@ -411,7 +417,7 @@ async function processItem(filePath, item, defaultLang, options) {
  */
 function compileHtml(item) {
   const result = VueCompiler.compile(item.node.toString())
-  let code = `({ render: function() { ${result.render} }, staticRenderFns: [ `
+  let code = `({ render: function(${item.attrs.functional ? '_h,_vm' : ''}) { ${result.render} }, staticRenderFns: [ `
 
   for (const fn of result.staticRenderFns) {
     code += `function() { ${fn} }, `
@@ -419,7 +425,7 @@ function compileHtml(item) {
 
   code += '] })'
 
-  code = BubleTransform(code, { transforms: { stripWith: true } }).code
+  code = BubleTransform(code, { transforms: { stripWith: true, stripWithFunctional: item.attrs.functional } }).code
 
   item.warnings = item.warnings.concat(result.errors)
   item.node = new SourceNode(null, null, item.node.source, code)
