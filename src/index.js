@@ -118,6 +118,7 @@ async function generate(filePath, components, content, options) {
    */
 
   rootNode.add([
+    '; (function() {\n',
     'var __vue_exports__ = module.exports || {}\n',
     'if (__vue_exports__.__esModule) {\n',
     '  __vue_exports__ = __vue_exports__.default\n',
@@ -319,7 +320,10 @@ async function generate(filePath, components, content, options) {
    * Export module
    */
 
-  rootNode.add(['module.exports = __vue_exports__\n'])
+  rootNode.add([
+    'module.exports = __vue_exports__\n',
+    '})()\n',
+  ])
 
   /**
    * Return result
