@@ -27,7 +27,8 @@ compile('index.vue', content, options).then(res => {
   res.warnings
   res.code
   res.map
-  res.extractedStyles
+  res.scopeId
+  res.styles
 })
 ```
 
@@ -64,6 +65,11 @@ const options = {
     // plugins...
   ],
 
+  // Hot reload options
+  hotReload: {
+    module: 'vue-hot-reload-api',
+  },
+
   // Inject the target path into the module as module._fileName
   includeFileName: false,
 
@@ -75,6 +81,11 @@ const options = {
 
   // Enable sourcemap for styles, sourcemaps will be inlined in the css string if not extracted
   styleSourceMap: false,
+
+  // PostCSS modules options
+  cssModules: {
+    // options...
+  },
 
   // Source root for sourcemaps
   sourceMapRoot: 'vue:///',

@@ -41,6 +41,10 @@ const defaultOptions = {
   sourceMapRoot: 'vue:///',
 
   styleSourceMap: false,
+
+  cssModules: null,
+
+  hotReload: false,
 }
 
 /**
@@ -60,26 +64,28 @@ export default async function Compile(filePath, content, options_) {
   const promises = [null, null, null]
 
   if (components.script) {
-    const defaultLang = options.babel ? 'babel' : 'javascript'
-    promises[0] = processItem(filePath + '?script', components.script, defaultLang, options)
+    components.script.path = `${filePath}?script`
+    promises[0] = processItem(components.script, options.babel ? 'babel' : 'javascript', options)
   }
 
   if (components.template) {
     const leading = content.slice(0, components.template.start).split('\n')
 
+    components.template.path = `${filePath}?template`
     components.template.line = leading.length
     components.template.column = leading[leading.length - 1].length + 1
 
-    promises[1] = processItem(filePath + '?template', components.template, 'html', options).then(compileHtml)
+    promises[1] = processItem(components.template, 'html', options).then(compileHtml)
   }
 
   promises[2] = Promise.all(components.styles.map((style, index) => {
-    return processItem(filePath + '?style_' + index, style, 'css', options)
+    style.path = `${filePath}?style_${index}`
+    return processItem(style, 'css', options)
   }))
 
   const result = await Promise.all(promises)
 
-  return generate(filePath, { script: result[0], template: result[1], styles: result[2] }, content, options)
+  return generate(filePath, { script: result[0], template: result[1], styles: result[2] }, options)
 }
 
 /**
@@ -87,11 +93,10 @@ export default async function Compile(filePath, content, options_) {
  *
  * @param {string} filePath
  * @param {Object} components
- * @param {string} content
  * @param {Object} options
  * @return {Object} Gnerated result
  */
-async function generate(filePath, components, content, options) {
+async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
   const extractedStyles = []
 
@@ -171,7 +176,7 @@ async function generate(filePath, components, content, options) {
   if (components.styles.length) {
 
     let styleNode = null
-    let modules = null
+    let cssModules = null
 
     if (!options.extractStyles) {
       styleNode = new SourceNode(null, null, filePath)
@@ -197,13 +202,13 @@ async function generate(filePath, components, content, options) {
 
       if (style.module) {
 
-        if (!modules) {
-          modules = Object.create(null)
+        if (!cssModules) {
+          cssModules = Object.create(null)
         }
 
         const moduleName = (style.module === true) ? '$style' : style.module
 
-        if (modules[moduleName]) {
+        if (cssModules[moduleName]) {
           warnings.push(new Error(`CSS module name '${moduleName}' conflicts in '${filePath}'`))
 
           if (options.showDevHints) {
@@ -213,11 +218,11 @@ async function generate(filePath, components, content, options) {
           }
         }
 
-        postcssPlugins.push(PostCSSModules({
+        postcssPlugins.push(PostCSSModules(Object.assign({}, options.cssModules, {
           getJSON(fileName, json) {
-            modules[moduleName] = json
+            cssModules[moduleName] = json
           },
-        }))
+        })))
       }
 
       /**
@@ -226,7 +231,7 @@ async function generate(filePath, components, content, options) {
 
       if (style.scoped) {
         if (!scopeId) {
-          scopeId = `v${GenId(filePath)}`
+          scopeId = GenId(filePath)
         }
         hasScopedStyles = true
         postcssPlugins.push(PostCSSScope({ scopeId }))
@@ -251,7 +256,7 @@ async function generate(filePath, components, content, options) {
           postcssMapOpts = { inline: false, annotation: false, prev: node.toStringWithSourceMap().map.toJSON() }
         }
 
-        const result = await PostCSS(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: filePath, to: filePath })
+        const result = await PostCSS(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: style.path, to: style.path })
 
         if (!options.styleSourceMap) {
           node = new SourceNode(null, null, node.source, result.css)
@@ -288,7 +293,7 @@ async function generate(filePath, components, content, options) {
         rootNode.add(JSON.stringify(styleNode.toString()))
       }
       if (!scopeId) {
-        scopeId = `v${GenId(filePath)}`
+        scopeId = GenId(filePath)
       }
       rootNode.add([', ', JSON.stringify(scopeId)])
       rootNode.add(')\n')
@@ -302,18 +307,38 @@ async function generate(filePath, components, content, options) {
       rootNode.add(['__vue_options__._scopeId = ', JSON.stringify(scopeId), '\n'])
     }
 
-    if (modules) {
-      rootNode.add([
-        'var __vue_styles__ = ', JSON.stringify(modules), '\n',
-        'if (!__vue_options__.computed) {\n',
-        '  __vue_options__.computed = {}\n',
-        '}\n',
-        'Object.keys(__vue_styles__).forEach(function(key) {\n',
-        '  var module = __vue_styles__[key]\n',
-        '  __vue_options__.computed[key] = function() { return module }\n',
-        '})\n',
-      ])
+    if (cssModules) {
+      for (const [key, val] of Object.entries(cssModules)) {
+        rootNode.add([
+          'Object.defineProperty(__vue_options__, ', JSON.stringify(key), ', { get: function() { return ', JSON.stringify(val), ' } })\n',
+        ])
+      }
     }
+  }
+
+  /**
+   * Hot reload
+   */
+
+  if (options.hotReload) {
+
+    if (!scopeId) {
+      scopeId = GenId(filePath)
+    }
+
+    rootNode.add([
+      'if (module.hot) {\n',
+      '  var hotAPI = require(', JSON.stringify(options.hotReload.module), ')\n',
+      '  module.hot.accept()\n',
+      '  if (!module.hot.data) {\n',
+      '    hotAPI.createRecord(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '  } else if (__vue_options__.functional) {\n',
+      '    hotAPI.rerender(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '  } else {\n',
+      '    hotAPI.reload(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '  }\n',
+      '}\n',
+    ])
   }
 
   /**
@@ -353,19 +378,18 @@ async function generate(filePath, components, content, options) {
 /**
  * Process component item according to it's language
  *
- * @param {string} filePath
  * @param {Object} item
  * @param {string} defaultLang
  * @param {Object} options
  * @return {Object} The component item
  */
-async function processItem(filePath, item, defaultLang, options) {
+async function processItem(item, defaultLang, options) {
 
   if (item.src) {
     item.node = new SourceNode(
       item.line || 1,
       item.column,
-      filePath,
+      item.path,
       `require(${JSON.stringify(item.src)})`
     )
     return item
@@ -378,7 +402,7 @@ async function processItem(filePath, item, defaultLang, options) {
   if (!compile) {
     const lines = item.content.split('\n')
 
-    item.node = new SourceNode(null, null, filePath, lines.map((content, line) => {
+    item.node = new SourceNode(null, null, item.path, lines.map((content, line) => {
       let lineEnding = ''
 
       if (line + 1 < lines.length) {
@@ -388,27 +412,27 @@ async function processItem(filePath, item, defaultLang, options) {
       return new SourceNode(
         (item.line || 1) + line,
         line ? 0 : item.column,
-        filePath,
+        item.path,
         content + lineEnding
       )
     }))
 
-    item.node.setSourceContent(filePath, item.content)
+    item.node.setSourceContent(item.path, item.content)
 
     return item
   }
 
-  const result = await compile(filePath, item.content, options)
+  const result = await compile(item.path, item.content, options)
 
   item.warnings = result.warnings || []
 
   if (!options.sourceMap || !result.map) {
-    item.node = new SourceNode(null, null, filePath, result.code)
+    item.node = new SourceNode(null, null, item.path, result.code)
   } else {
     item.node = SourceNode.fromStringWithSourceMap(result.code, new SourceMapConsumer(result.map))
   }
 
-  item.node.setSourceContent(filePath, item.content)
+  item.node.setSourceContent(item.path, item.content)
 
   return item
 }
@@ -421,17 +445,19 @@ async function processItem(filePath, item, defaultLang, options) {
  */
 function compileHtml(item) {
   const result = VueCompiler.compile(item.node.toString())
-  let code = `({ render: function(${item.attrs.functional ? '_h,_vm' : ''}) { ${result.render} }, staticRenderFns: [ `
+  const fnArgs = item.attrs.functional ? '_h,_vm' : ''
+
+  let code = `({ render: function(${fnArgs}) { ${result.render} }, staticRenderFns: [ `
 
   for (const fn of result.staticRenderFns) {
-    code += `function() { ${fn} }, `
+    code += `function(${fnArgs}) { ${fn} }, `
   }
 
   code += '] })'
 
   code = BubleTransform(code, { transforms: { stripWith: true, stripWithFunctional: item.attrs.functional } }).code
 
-  item.warnings = item.warnings.concat(result.errors)
+  item.warnings = item.warnings.concat(result.errors).concat(result.tips)
   item.node = new SourceNode(null, null, item.node.source, code)
 
   return item
