@@ -92,5 +92,10 @@ const options = {
 
   // Method to load css strings into DOM, it will be invoked as `loadCss('some css')`
   styleLoader: 'loadCss',
+
+  // Vue template compiler options
+  compilerOptions: {
+    // options...
+  },
 }
 ```

@@ -18,7 +18,7 @@ const readFile = Promisify(Fs.readFile)
 /**
  * Default transform options
  */
-const defaultOptions = {
+const DefaultOptions = {
 
   compilers: DefaultCompilers,
 
@@ -45,6 +45,8 @@ const defaultOptions = {
   cssModules: null,
 
   hotReload: false,
+
+  compilerOptions: null,
 }
 
 /**
@@ -55,11 +57,9 @@ const defaultOptions = {
  * @param {Object} options_
  * @return {Object} Compile result
  */
-export default async function Compile(filePath, content, options_) {
-  const options = Object.assign({}, defaultOptions, options_)
-  const components = VueCompiler.parseComponent(content, { pad: true })
-
-  options.compilers = Object.assign({}, DefaultCompilers, options.compilers)
+export default async function Compile(filePath, content, options_ = {}) {
+  const options = { ...DefaultOptions, ...options_, compilers: { ...DefaultCompilers, ...options_.compilers } }
+  const components = VueCompiler.parseComponent(content, { pad: true, outputSourceRange: true })
 
   const promises = [null, null, null]
 
@@ -75,7 +75,7 @@ export default async function Compile(filePath, content, options_) {
     components.template.line = leading.length
     components.template.column = leading[leading.length - 1].length + 1
 
-    promises[1] = processItem(components.template, 'html', options).then(compileHtml)
+    promises[1] = processItem(components.template, 'html', options).then(item => compileHtml(item, options))
   }
 
   promises[2] = Promise.all(components.styles.map((style, index) => {
@@ -83,9 +83,9 @@ export default async function Compile(filePath, content, options_) {
     return processItem(style, 'css', options)
   }))
 
-  const result = await Promise.all(promises)
+  const [script, template, styles] = await Promise.all(promises)
 
-  return generate(filePath, { script: result[0], template: result[1], styles: result[2] }, options)
+  return generate(filePath, { script, template, styles, warnings: components.errors }, options)
 }
 
 /**
@@ -100,7 +100,7 @@ async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
   const extractedStyles = []
 
-  let warnings = []
+  let warnings = components.warnings.slice()
 
   let hasScopedStyles = false
   let scopeId = null
@@ -209,7 +209,7 @@ async function generate(filePath, components, options) {
         const moduleName = (style.module === true) ? '$style' : style.module
 
         if (cssModules[moduleName]) {
-          warnings.push(new Error(`CSS module name '${moduleName}' conflicts in '${filePath}'`))
+          warnings.push({ msg: `CSS module name '${moduleName}' conflicts in '${filePath}'`, start: style.start })
 
           if (options.showDevHints) {
             rootNode.add([
@@ -218,11 +218,12 @@ async function generate(filePath, components, options) {
           }
         }
 
-        postcssPlugins.push(PostCSSModules(Object.assign({}, options.cssModules, {
+        postcssPlugins.push(PostCSSModules({
           getJSON(fileName, json) {
             cssModules[moduleName] = json
           },
-        })))
+          ...options.cssModules,
+        }))
       }
 
       /**
@@ -242,7 +243,7 @@ async function generate(filePath, components, options) {
        */
 
       if (options.cssnano) {
-        postcssPlugins.push(CSSNano(Object.assign({ safe: true }, options.cssnano)))
+        postcssPlugins.push(CSSNano({ safe: true, ...options.cssnano }))
       }
 
       /**
@@ -443,8 +444,8 @@ async function processItem(item, defaultLang, options) {
  * @param {Object} item
  * @return {Object} The component item
  */
-function compileHtml(item) {
-  const result = VueCompiler.compile(item.node.toString())
+function compileHtml(item, options) {
+  const result = VueCompiler.compile(item.node.toString(), { outputSourceRange: true, ...options.compilerOptions })
   const fnArgs = item.attrs.functional ? '_h,_vm' : ''
 
   let code = `({ render: function(${fnArgs}) { ${result.render} }, staticRenderFns: [ `
@@ -459,6 +460,15 @@ function compileHtml(item) {
 
   item.warnings = item.warnings.concat(result.errors).concat(result.tips)
   item.node = new SourceNode(null, null, item.node.source, code)
+
+  for (const msg of item.warnings) {
+    if (msg.start != null) {
+      msg.start += item.start
+    }
+    if (msg.end != null) {
+      msg.end += item.start
+    }
+  }
 
   return item
 }
