@@ -9,20 +9,17 @@ import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 
 import GenId from './GenId'
 import PostCSSScope from './PostCSSScope'
-import DefaultCompilers from './DefaultCompilers'
 
 /**
  * Default transform options
  */
 const DefaultOptions = {
 
-  compilers: DefaultCompilers,
+  compilers: {},
 
   includeFileName: false,
 
   showDevHints: false,
-
-  babel: false,
 
   postcss: false,
 
@@ -43,6 +40,8 @@ const DefaultOptions = {
   hotReload: false,
 
   compilerOptions: null,
+
+  getCompiler: () => {},
 }
 
 /**
@@ -54,7 +53,7 @@ const DefaultOptions = {
  * @return {Object} Compile result
  */
 export default async function Compile(filePath, content, options_ = {}) {
-  const options = { ...DefaultOptions, ...options_, compilers: { ...DefaultCompilers, ...options_.compilers } }
+  const options = { ...DefaultOptions, ...options_ }
   const components = VueCompiler.parseComponent(content, { pad: true, outputSourceRange: true })
 
   if (components.errors && components.errors.length) {
@@ -65,7 +64,7 @@ export default async function Compile(filePath, content, options_ = {}) {
 
   if (components.script) {
     components.script.path = `${filePath}?script`
-    promises[0] = processItem(components.script, options.babel ? 'babel' : 'javascript', options)
+    promises[0] = processItem(components.script, options)
   }
 
   if (components.template) {
@@ -75,17 +74,17 @@ export default async function Compile(filePath, content, options_ = {}) {
     components.template.line = leading.length
     components.template.column = leading[leading.length - 1].length + 1
 
-    promises[1] = processItem(components.template, 'html', options).then(item => compileHtml(item, options))
+    promises[1] = processItem(components.template, options).then(item => compileHtml(item, options))
   }
 
   promises[2] = Promise.all(components.styles.map((style, index) => {
     style.path = `${filePath}?style_${index}`
-    return processItem(style, 'css', options)
+    return processItem(style, options)
   }))
 
   promises[3] = Promise.all(components.customBlocks.map((block, index) => {
     block.path = `${filePath}?${block.type}_${index}`
-    return processItem(block, block.type, options)
+    return processItem(block, options)
   }))
 
   const [script, template, styles, customBlocks] = await Promise.all(promises)
@@ -405,11 +404,10 @@ async function generate(filePath, components, options) {
  * Process component item according to its language
  *
  * @param {Object} item
- * @param {string} defaultLang
  * @param {Object} options
  * @return {Object} The component item
  */
-async function processItem(item, defaultLang, options) {
+async function processItem(item, options) {
 
   if (item.src) {
     item.node = new SourceNode(
@@ -421,7 +419,7 @@ async function processItem(item, defaultLang, options) {
     return item
   }
 
-  const compile = options.compilers[item.lang || defaultLang]
+  const compile = options.getCompiler(item, options) || options.compilers[item.lang] || options.compilers[item.type]
 
   item.warnings = []
 
