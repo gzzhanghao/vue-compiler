@@ -7,13 +7,13 @@ __NOTE: Please check out [vue-loader](https://github.com/vuejs/vue-loader) and [
 ## Installation
 
 ```bash
-npm i -S @gzzhanghao/vue-component-compiler
+npm i -S @gzzhanghao/vue-compiler
 ```
 
 ## Usage
 
 ```javascript
-import compile from '@gzzhanghao/vue-component-compiler'
+import compile from '@gzzhanghao/vue-compiler'
 
 const content = `
   <!-- component content -->
@@ -48,17 +48,8 @@ const options = {
     },
   },
 
-  // Enable babel, it also accepts an option object
-  // When truthy, compiler will compile script tags' content with babel by default
-  babel: false,
-
   // Enables cssnano minifier, also accepts an option object
   cssnano: false,
-
-  // Options for the less compiler
-  less: {
-    // options...
-  },
 
   // Postcss plugin list
   postcss: [

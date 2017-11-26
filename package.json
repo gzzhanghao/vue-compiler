@@ -10,7 +10,6 @@
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "babel-core": "^6.18.2",
     "chokidar": "^1.6.1",
     "cssnano": "^3.8.1",
     "es6-promisify": "^5.0.0",
