@@ -13,85 +13,119 @@ npm i -S @gzzhanghao/vue-compiler
 ## Usage
 
 ```javascript
-import compile from '@gzzhanghao/vue-compiler'
+const compile = require('@gzzhanghao/vue-compiler').default
+
+const filePath = 'index.vue'
 
 const content = `
-  <!-- component content -->
+  <template>
+    <div> component contents </div>
+  </template>
 `
 
 const options = {
   // compiler options
 }
 
-compile('index.vue', content, options).then(res => {
-  res.warnings
-  res.code
-  res.map
-  res.scopeId
-  res.styles
+compile(filePath, content, options).then(res => {
+  if (res.errors) {
+    console.log(res.errors)
+    return
+  }
+  console.log(res.code)
+  // commonjs module code
 })
 ```
 
-## Options
+## API
 
-```javascript
-const options = {
+```typescript
+type CompilerOptions = {
 
-  // Custom compilers for other languages
-  compilers: {
+  includeFileName?: boolean // false
+  // inject file path as module.__file
 
-    // Compiler for specific language, returns a Promise with transpile result
-    // (filePath: string, content: string, options: Object) => Promise
-    ts(filePath, content, options) {
-      // compile some TypeScript...
-      return Promise.resolve({ code, map })
-    },
-  },
+  compilerOptions?: Object // null
+  // options for vue template compiler
 
-  // Enables cssnano minifier, also accepts an option object
-  cssnano: false,
+  extractStyles?: boolean // false
+  // extract styles from the component
+  // extracted styles are available in 'styles' field
 
-  // Postcss plugin list
-  postcss: [
-    // plugins...
-  ],
+  styleLoader?: string // "loadCss"
+  // method to load css strings if not extracted
+  // styles will be loaded with `${styleLoader}(${css_string}, ${scopeId})`
 
-  // Hot reload options
-  hotReload: {
-    module: 'vue-hot-reload-api',
-  },
+  postcss?: Array<PostCSSPlugin> // []
+  // PostCSS plugin list
 
-  // Inject the target path into the module as module._fileName
-  includeFileName: false,
+  postcssModules?: Object // null
+  // options for PostCSS modules
 
-  // Extract styles from the component, extracted styles are available in the 'extractedStyles' field
-  extractStyles: false,
+  sourceMap?: boolean // false
+  // enable sourcemap
 
-  // Enable sourcemap
-  sourceMap: false,
+  styleSourceMap?: boolean // false
+  // enable sourcemap for styles
+  // style's sourcemap will be inlined in the css string if not extracted
 
-  // Enable sourcemap for styles, sourcemaps will be inlined in the css string if not extracted
-  styleSourceMap: false,
+  sourceMapRoot?: string // "vue:///"
+  // source root
 
-  // PostCSS modules options
-  cssModules: {
-    // options...
-  },
+  getCompiler?: CustomCompilerGetter // noop
+  // get compiler for a block
+  // return false to prevent resolving compiler from options.compilers
 
-  // Source root for sourcemaps
-  sourceMapRoot: 'vue:///',
+  compilers?: {
+    // custom compilers for other languages
 
-  // Method to load css strings into DOM, it will be invoked as `loadCss('some css')`
-  styleLoader: 'loadCss',
+    [key: string]: CustomCompiler
+    // keys will be matched to block's lang attribute and type
+  }
 
-  // Vue template compiler options
-  compilerOptions: {
-    // options...
-  },
+  hotReload?: { // null
+    // hot reload options
 
-  // Get a compiler for unknown block type
-  getCompiler(item: SFCBlock | SFCCustomBlock, options: Object) {
-    // return false to disable compiling
-  },
+    module: string
+    // eg: "vue-hot-reload-api"
+  }
 }
+
+type BuildResult = CodeResult & {
+
+  warnings: Array<WarningMessage>
+  // compiler warnings
+
+  scopeId?: string
+  // component scope id
+
+  styles?: Array<CodeResult>
+  // extracted styles
+}
+
+type CodeResult = {
+  code: string
+  map?: SourceMapGenerator
+}
+
+type ErrorResult = {
+
+  errors?: Array<WarningMessage>
+  // vue parser errors
+}
+
+interface Compiler {
+
+  default(filePath: string, content: string, options?: CompilerOptions): Promise<BuildResult | ErrorResult>
+}
+
+type WarningMessage = {
+  msg: string
+  start?: number
+  end?: number
+}
+
+type CustomCompilerGetter = (item: SFCBlock | SFCCustomBlock, options: CompilerOptions)?: CustomCompiler | false
+
+type CustomCompiler = (item: SFCBlock, options: Object): Promise<CodeResult & { warnings }>
 ```
