@@ -82,6 +82,9 @@ export default async function Compile(filePath, content, options_ = {}) {
 
   promises[3] = Promise.all(components.customBlocks.map((block, index) => {
     block.path = `${filePath}?${block.type}_${index}`
+    if (block.attrs.src) {
+      block.src = block.attrs.src
+    }
     return processItem(block, options)
   }))
 
@@ -282,7 +285,7 @@ async function generate(filePath, components, options) {
      * Bundle styles
      */
 
-    if (!options.extractStyles) {
+    if (!options.extractStyles && styleNode.children.length) {
       rootNode.add([options.styleLoader, '('])
       if (options.styleSourceMap) {
         const result = styleNode.toStringWithSourceMap({ sourceRoot: options.sourceMapRoot })
@@ -328,18 +331,29 @@ async function generate(filePath, components, options) {
    */
 
   for (const block of components.customBlocks) {
-    rootNode.add([
-      '; (function(module) {\n',
-      '  var exports = module.exports\n',
-      '  ; (function() {\n',
-      '    ', block.node, '\n',
-      '  })()\n',
-      '  if (typeof module.exports === "function") {\n',
-      '    return module.exports\n',
-      '  }\n',
-      '  return function() {}\n',
-      '})({ exports: {} })(module.exports)\n'
-    ])
+    if (block.src) {
+      rootNode.add([
+        '; (function() {\n',
+        '  var __vue_block__ = ', block.node, '\n',
+        '  if (typeof __vue_block__ === "function") {\n',
+        '    __vue_block__(module.exports)\n',
+        '  }\n',
+        '})()\n',
+      ])
+    } else {
+      rootNode.add([
+        '; (function(module) {\n',
+        '  var exports = module.exports\n',
+        '  ; (function() {\n',
+        '    ', block.node, '\n',
+        '  })()\n',
+        '  if (typeof module.exports === "function") {\n',
+        '    return module.exports\n',
+        '  }\n',
+        '  return function() {}\n',
+        '})({ exports: {} })(module.exports)\n'
+      ])
+    }
   }
 
   /**
@@ -465,6 +479,11 @@ async function processItem(item, options) {
  * @return {SFCBlock} The component item
  */
 function compileHtml(item, options) {
+
+  if (item.src) {
+    return item
+  }
+
   const result = VueCompiler.compile(item.node.toString(), { outputSourceRange: true, ...options.compilerOptions })
   const fnArgs = item.attrs.functional ? '_h,_vm' : ''
 
