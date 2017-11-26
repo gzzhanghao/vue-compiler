@@ -5,7 +5,7 @@ import PostCSS from 'postcss'
 import Promisify from 'es6-promisify'
 import PostCSSModules from 'postcss-modules'
 
-import * as VueCompiler from '../../vue/packages/vue-template-compiler'
+import * as VueCompiler from 'vue-template-compiler'
 import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
 import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 
@@ -257,7 +257,7 @@ async function generate(filePath, components, options) {
       }
 
       /**
-       * Post css transform
+       * PostCSS transform
        */
 
       if (postcssPlugins.length) {
