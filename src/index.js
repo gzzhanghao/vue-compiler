@@ -1,7 +1,7 @@
-import CSSNano from 'cssnano'
 import PostCSS from 'postcss'
 import Promisify from 'es6-promisify'
 import PostCSSModules from 'postcss-modules'
+import PostCSSComposition from 'postcss-plugin-composition'
 
 import * as VueCompiler from 'vue-template-compiler'
 import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
@@ -22,8 +22,6 @@ const DefaultOptions = {
   showDevHints: false,
 
   postcss: false,
-
-  cssnano: false,
 
   extractStyles: false,
 
@@ -223,12 +221,14 @@ async function generate(filePath, components, options) {
           }
         }
 
-        postcssPlugins.push(PostCSSModules({
-          getJSON(fileName, json) {
-            cssModules[moduleName] = json
-          },
-          ...options.cssModules,
-        }))
+        postcssPlugins.push(PostCSSComposition([
+          PostCSSModules({
+            getJSON(fileName, json) {
+              cssModules[moduleName] = json
+            },
+            ...options.cssModules,
+          }),
+        ]))
       }
 
       /**
@@ -241,14 +241,6 @@ async function generate(filePath, components, options) {
         }
         hasScopedStyles = true
         postcssPlugins.push(PostCSSScope({ scopeId }))
-      }
-
-      /**
-       * Minify style
-       */
-
-      if (options.cssnano) {
-        postcssPlugins.push(CSSNano({ safe: true, ...options.cssnano }))
       }
 
       /**
@@ -401,11 +393,11 @@ async function generate(filePath, components, options) {
 }
 
 /**
- * Process component item according to its language
+ * Process the SFCBlock according to its language
  *
- * @param {Object} item
- * @param {Object} options
- * @return {Object} The component item
+ * @param {SFCBlock} item    The SFCBlock to be compiled
+ * @param {Object}   options
+ * @return {SFCBlock}
  */
 async function processItem(item, options) {
 
@@ -419,9 +411,13 @@ async function processItem(item, options) {
     return item
   }
 
-  const compile = options.getCompiler(item, options) || options.compilers[item.lang] || options.compilers[item.type]
-
   item.warnings = []
+
+  let compile = options.getCompiler(item, options)
+
+  if (!compile && compile !== false) {
+    compile = options.compilers[item.lang] || options.compilers[item.type]
+  }
 
   if (!compile) {
     const lines = item.content.split('\n')
@@ -464,8 +460,9 @@ async function processItem(item, options) {
 /**
  * Compile html to vue template functions
  *
- * @param {Object} item
- * @return {Object} The component item
+ * @param {SFCBlock} item    The template block
+ * @param {Object}   options
+ * @return {SFCBlock} The component item
  */
 function compileHtml(item, options) {
   const result = VueCompiler.compile(item.node.toString(), { outputSourceRange: true, ...options.compilerOptions })

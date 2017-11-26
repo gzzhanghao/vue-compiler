@@ -91,7 +91,7 @@ const options = {
 
   // Get a compiler for unknown block type
   getCompiler(item: SFCBlock | SFCCustomBlock, options: Object) {
-    // return a compiler for the block
+    // return false to disable compiling
   },
 }
 ```

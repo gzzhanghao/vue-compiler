@@ -1,7 +1,7 @@
 import PostCSS from 'postcss'
 import SelectorParser from 'postcss-selector-parser'
 
-export default PostCSS.plugin('add-id', options => root => {
+export default PostCSS.plugin('postcss-scope', options => root => {
   root.each(function rewriteSelector(node) {
 
     if (!node.selector) {
@@ -22,7 +22,9 @@ export default PostCSS.plugin('add-id', options => root => {
           }
         })
 
-        selector.insertAfter(node, SelectorParser.attribute({ attribute: options.scopeId }))
+        if (node) {
+          selector.insertAfter(node, SelectorParser.attribute({ attribute: options.scopeId }))
+        }
       })
     }).process(node.selector).result
   })
