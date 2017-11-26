@@ -5,7 +5,7 @@ import PostCSS from 'postcss'
 import Promisify from 'es6-promisify'
 import PostCSSModules from 'postcss-modules'
 
-import * as VueCompiler from 'vue-template-compiler'
+import * as VueCompiler from '../../vue/packages/vue-template-compiler'
 import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
 import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 
@@ -61,6 +61,10 @@ export default async function Compile(filePath, content, options_ = {}) {
   const options = { ...DefaultOptions, ...options_, compilers: { ...DefaultCompilers, ...options_.compilers } }
   const components = VueCompiler.parseComponent(content, { pad: true, outputSourceRange: true })
 
+  if (components.errors.length) {
+    return { errors: components.errors }
+  }
+
   const promises = [null, null, null]
 
   if (components.script) {
@@ -83,9 +87,14 @@ export default async function Compile(filePath, content, options_ = {}) {
     return processItem(style, 'css', options)
   }))
 
-  const [script, template, styles] = await Promise.all(promises)
+  promises[3] = Promise.all(components.customBlocks.map((block, index) => {
+    block.path = `${filePath}?${block.type}_${index}`
+    return processItem(block, block.type, options)
+  }))
 
-  return generate(filePath, { script, template, styles, warnings: components.errors }, options)
+  const [script, template, styles, customBlocks] = await Promise.all(promises)
+
+  return generate(filePath, { script, template, styles, customBlocks }, options)
 }
 
 /**
@@ -100,7 +109,7 @@ async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
   const extractedStyles = []
 
-  let warnings = components.warnings.slice()
+  let warnings = []
 
   let hasScopedStyles = false
   let scopeId = null
@@ -139,15 +148,16 @@ async function generate(filePath, components, options) {
   }
 
   if (options.showDevHints) {
+
     rootNode.add([
       'if (__vue_exports__.__esModule && Object.keys(__vue_exports__).some(function(key) { return key !== "default" && key !== "__esModule" })) {\n',
-      `  console.error("[vue-compiler]", ${JSON.stringify(filePath)}, ": Named exports are not supported in *.vue files.")\n`,
+      '  console.error(', JSON.stringify(`[vue-compiler] ${filePath}: Named exports are not supported in *.vue files.`), ')\n',
       '}\n',
     ])
     if (components.template && !components.template.attrs.functional) {
       rootNode.add([
         'if (__vue_options__.functional) {\n',
-        `  console.error("[vue-compiler]", ${JSON.stringify(filePath)}, ": Functional property should be defined on the <template> tag.")\n`,
+        '  console.error(', JSON.stringify(`[vue-compiler] ${filePath}: Functional property should be defined on the <template> tag.`), ')\n',
         '}\n',
       ])
     }
@@ -209,11 +219,11 @@ async function generate(filePath, components, options) {
         const moduleName = (style.module === true) ? '$style' : style.module
 
         if (cssModules[moduleName]) {
-          warnings.push({ msg: `CSS module name '${moduleName}' conflicts in '${filePath}'`, start: style.start })
+          warnings.push({ msg: `CSS module name '${moduleName}' conflicts`, start: style.blockStart })
 
           if (options.showDevHints) {
             rootNode.add([
-              `console.error("[vue-compiler]", ${JSON.stringify(filePath)}, ": CSS module name", ${JSON.stringify(moduleName)}, "conflicts")\n`,
+              'console.error(', JSON.stringify(`[vue-compiler] ${filePath}: CSS module name '${moduleName}' already exists.`), ')\n',
             ])
           }
         }
@@ -318,6 +328,34 @@ async function generate(filePath, components, options) {
   }
 
   /**
+   * Export module
+   */
+
+  rootNode.add([
+    'module.exports = __vue_exports__\n',
+    '})()\n',
+  ])
+
+  /**
+   * Custom blocks
+   */
+
+  for (const block of components.customBlocks) {
+    rootNode.add([
+      '; (function(module) {\n',
+      '  var exports = module.exports\n',
+      '  ; (function() {\n',
+      '    ', block.node, '\n',
+      '  })()\n',
+      '  if (typeof module.exports === "function") {\n',
+      '    return module.exports\n',
+      '  }\n',
+      '  return function() {}\n',
+      '})({ exports: {} })(module.exports)\n'
+    ])
+  }
+
+  /**
    * Hot reload
    */
 
@@ -328,28 +366,19 @@ async function generate(filePath, components, options) {
     }
 
     rootNode.add([
-      'if (module.hot) {\n',
+      'if (module.hot) (function() {\n',
       '  var hotAPI = require(', JSON.stringify(options.hotReload.module), ')\n',
       '  module.hot.accept()\n',
       '  if (!module.hot.data) {\n',
-      '    hotAPI.createRecord(', JSON.stringify(scopeId), ', __vue_options__)\n',
-      '  } else if (__vue_options__.functional) {\n',
-      '    hotAPI.rerender(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '    hotAPI.createRecord(', JSON.stringify(scopeId), ', module.exports)\n',
+      '  } else if (module.exports.functional) {\n',
+      '    hotAPI.rerender(', JSON.stringify(scopeId), ', module.exports)\n',
       '  } else {\n',
-      '    hotAPI.reload(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '    hotAPI.reload(', JSON.stringify(scopeId), ', module.exports)\n',
       '  }\n',
-      '}\n',
+      '})()\n',
     ])
   }
-
-  /**
-   * Export module
-   */
-
-  rootNode.add([
-    'module.exports = __vue_exports__\n',
-    '})()\n',
-  ])
 
   /**
    * Return result
@@ -377,7 +406,7 @@ async function generate(filePath, components, options) {
 }
 
 /**
- * Process component item according to it's language
+ * Process component item according to its language
  *
  * @param {Object} item
  * @param {string} defaultLang
