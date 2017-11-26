@@ -21,7 +21,7 @@ const DefaultOptions = {
 
   showDevHints: false,
 
-  postcss: false,
+  postcss: [],
 
   extractStyles: false,
 
@@ -33,7 +33,7 @@ const DefaultOptions = {
 
   styleSourceMap: false,
 
-  cssModules: null,
+  postcssModules: null,
 
   hotReload: false,
 
@@ -229,7 +229,7 @@ async function generate(filePath, components, options) {
             getJSON(fileName, json) {
               cssModules[moduleName] = json
             },
-            ...options.cssModules,
+            ...options.postcssModules,
           }),
         ]))
       }
@@ -456,7 +456,7 @@ async function processItem(item, options) {
     return item
   }
 
-  const result = await compile(item.path, item.content, options)
+  const result = await compile(item, options)
 
   item.warnings = result.warnings || []
 
