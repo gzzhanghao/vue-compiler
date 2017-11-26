@@ -1,5 +1,3 @@
-import Fs from 'fs'
-import Path from 'path'
 import CSSNano from 'cssnano'
 import PostCSS from 'postcss'
 import Promisify from 'es6-promisify'
@@ -12,8 +10,6 @@ import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 import GenId from './GenId'
 import PostCSSScope from './PostCSSScope'
 import DefaultCompilers from './DefaultCompilers'
-
-const readFile = Promisify(Fs.readFile)
 
 /**
  * Default transform options
@@ -61,7 +57,7 @@ export default async function Compile(filePath, content, options_ = {}) {
   const options = { ...DefaultOptions, ...options_, compilers: { ...DefaultCompilers, ...options_.compilers } }
   const components = VueCompiler.parseComponent(content, { pad: true, outputSourceRange: true })
 
-  if (components.errors.length) {
+  if (components.errors && components.errors.length) {
     return { errors: components.errors }
   }
 
