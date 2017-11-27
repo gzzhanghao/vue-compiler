@@ -45,14 +45,14 @@ const DefaultOptions = {
 /**
  * Compile file into component
  *
- * @param {string} filePath
- * @param {string} content
- * @param {Object} options_
- * @return {Object} Compile result
+ * @param {string}          filePath
+ * @param {string}          content
+ * @param {CompilerOptions} options_
+ * @return {BuildResult | ErrorResult} Compile result
  */
 export default async function Compile(filePath, content, options_ = {}) {
   const options = { ...DefaultOptions, ...options_ }
-  const components = VueCompiler.parseComponent(content, { pad: true, outputSourceRange: true })
+  const components = VueCompiler.parseComponent(content, { outputSourceRange: true })
 
   if (components.errors && components.errors.length) {
     return { errors: components.errors }
@@ -61,45 +61,40 @@ export default async function Compile(filePath, content, options_ = {}) {
   const promises = [null, null, null]
 
   if (components.script) {
-    components.script.path = `${filePath}?script`
+    setSourceInfo(components.script, filePath, content)
     promises[0] = processItem(components.script, options)
   }
 
   if (components.template) {
-    const leading = content.slice(0, components.template.start).split('\n')
-
-    components.template.path = `${filePath}?template`
-    components.template.line = leading.length
-    components.template.column = leading[leading.length - 1].length + 1
-
-    promises[1] = processItem(components.template, options).then(item => compileHtml(item, options))
+    setSourceInfo(components.template, filePath, content)
+    promises[1] = processItem(components.template, options)
+      .then(() => compileHtml(components.template, options))
   }
 
   promises[2] = Promise.all(components.styles.map((style, index) => {
-    style.path = `${filePath}?style_${index}`
+    style.index = index
+    setSourceInfo(style, filePath, content)
     return processItem(style, options)
   }))
 
   promises[3] = Promise.all(components.customBlocks.map((block, index) => {
-    block.path = `${filePath}?${block.type}_${index}`
-    if (block.attrs.src) {
-      block.src = block.attrs.src
-    }
+    block.index = index
+    setSourceInfo(block, filePath, content)
     return processItem(block, options)
   }))
 
-  const [script, template, styles, customBlocks] = await Promise.all(promises)
+  await Promise.all(promises)
 
-  return generate(filePath, { script, template, styles, customBlocks }, options)
+  return generate(filePath, components, options)
 }
 
 /**
  * Generate source code from given components
  *
- * @param {string} filePath
- * @param {Object} components
- * @param {Object} options
- * @return {Object} Gnerated result
+ * @param {string}          filePath
+ * @param {SFCDescriptor}   components
+ * @param {CompilerOptions} options
+ * @return {BuildResult} Gnerated result
  */
 async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
@@ -115,7 +110,7 @@ async function generate(filePath, components, options) {
    */
 
   if (components.script) {
-    if (components.script.src) {
+    if (components.script.attrs.src) {
       rootNode.add(['exports = module.exports = ', components.script.node, '\n'])
     } else {
       rootNode.add(['(function(){\n', components.script.node, '\n})()\n'])
@@ -193,7 +188,7 @@ async function generate(filePath, components, options) {
       let node = style.node
       let postcssPlugins = []
 
-      if (style.src) {
+      if (style.attrs.src) {
         rootNode.add([node, '\n'])
         continue
       }
@@ -257,7 +252,7 @@ async function generate(filePath, components, options) {
           postcssMapOpts = { inline: false, annotation: false, prev: node.toStringWithSourceMap().map.toJSON() }
         }
 
-        const result = await PostCSS(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: style.path, to: style.path })
+        const result = await PostCSS(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: style.filePath, to: style.filePath })
 
         if (!options.styleSourceMap) {
           node = new SourceNode(null, null, node.source, result.css)
@@ -331,7 +326,7 @@ async function generate(filePath, components, options) {
    */
 
   for (const block of components.customBlocks) {
-    if (block.src) {
+    if (block.attrs.src) {
       rootNode.add([
         '; (function() {\n',
         '  var __vue_block__ = ', block.node, '\n',
@@ -409,24 +404,10 @@ async function generate(filePath, components, options) {
 /**
  * Process the SFCBlock according to its language
  *
- * @param {SFCBlock} item    The SFCBlock to be compiled
- * @param {Object}   options
- * @return {SFCBlock}
+ * @param {SFCBlock}        item    The SFCBlock to be compiled
+ * @param {CompilerOptions} options
  */
 async function processItem(item, options) {
-
-  if (item.src) {
-    item.node = new SourceNode(
-      item.line || 1,
-      item.column,
-      item.path,
-      `require(${JSON.stringify(item.src)})`
-    )
-    return item
-  }
-
-  item.warnings = []
-
   let compile = options.getCompiler(item, options)
 
   if (!compile && compile !== false) {
@@ -434,54 +415,36 @@ async function processItem(item, options) {
   }
 
   if (!compile) {
-    const lines = item.content.split('\n')
-
-    item.node = new SourceNode(null, null, item.path, lines.map((content, line) => {
-      let lineEnding = ''
-
-      if (line + 1 < lines.length) {
-        lineEnding = '\n'
-      }
-
-      return new SourceNode(
-        (item.line || 1) + line,
-        line ? 0 : item.column,
-        item.path,
-        content + lineEnding
-      )
-    }))
-
-    item.node.setSourceContent(item.path, item.content)
-
-    return item
+    return
   }
 
   const result = await compile(item, options)
 
+  if (!result) {
+    return
+  }
+
   item.warnings = result.warnings || []
 
   if (!options.sourceMap || !result.map) {
-    item.node = new SourceNode(null, null, item.path, result.code)
+    item.node = new SourceNode(null, null, item.filePath, result.code)
   } else {
     item.node = SourceNode.fromStringWithSourceMap(result.code, new SourceMapConsumer(result.map))
   }
 
-  item.node.setSourceContent(item.path, item.content)
-
-  return item
+  return
 }
 
 /**
  * Compile html to vue template functions
  *
- * @param {SFCBlock} item    The template block
- * @param {Object}   options
- * @return {SFCBlock} The component item
+ * @param {SFCBlock}        item    The template block
+ * @param {CompilerOptions} options
  */
 function compileHtml(item, options) {
 
-  if (item.src) {
-    return item
+  if (item.attrs.src) {
+    return
   }
 
   const result = VueCompiler.compile(item.node.toString(), { outputSourceRange: true, ...options.compilerOptions })
@@ -508,6 +471,49 @@ function compileHtml(item, options) {
       msg.end += item.start
     }
   }
+}
 
-  return item
+/**
+ * Set source information for block
+ *
+ * @param {SFCBlock} item
+ * @param {string}   filePath
+ * @param {string}   content
+ */
+function setSourceInfo(item, filePath, content) {
+  const lines = item.content.split('\n')
+
+  item.warnings = []
+
+  item.filePath = filePath
+  item.content = Array(content.slice(0, item.start).split(/\r?\n/g).length).join('\n') + item.content
+
+  if (!item.attrs) {
+    item.attrs = {}
+  }
+
+  if (item.attrs.src) {
+    item.node = new SourceNode(
+      item.line || 1,
+      item.column,
+      item.filePath,
+      `require(${JSON.stringify(item.attrs.src)})`
+    )
+    return
+  }
+
+  item.node = new SourceNode(null, null, filePath, lines.map((content, line) => {
+    let lineEnding = ''
+
+    if (line + 1 < lines.length) {
+      lineEnding = '\n'
+    }
+
+    return new SourceNode(
+      (item.line || 1) + line,
+      line ? 0 : item.column,
+      filePath,
+      content + lineEnding
+    )
+  }))
 }
