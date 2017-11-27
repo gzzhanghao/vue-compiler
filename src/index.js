@@ -431,7 +431,7 @@ async function processItem(item, options) {
     item.node = SourceNode.fromStringWithSourceMap(result.code, new SourceMapConsumer(result.map))
   }
 
-  return
+  item.node.setSourceContent(item.filePath, item.sourceContent)
 }
 
 /**
@@ -464,10 +464,10 @@ function compileHtml(item, options) {
 
   for (const msg of item.warnings) {
     if (msg.start != null) {
-      msg.start += item.start
+      msg.start += item.start - item.line + 1
     }
     if (msg.end != null) {
-      msg.end += item.start
+      msg.end += item.start - item.line + 1
     }
   }
 }
@@ -484,8 +484,14 @@ function setSourceInfo(item, filePath, content) {
 
   item.warnings = []
 
-  item.filePath = filePath
-  item.content = Array(content.slice(0, item.start).split(/\r?\n/g).length).join('\n') + item.content
+  item.line = content.slice(0, item.start).split(/\r?\n/g).length
+  item.content = Array(item.line).join('\n') + item.content
+
+  item.filePath = `${filePath}?${item.type}`
+  if (item.index != null) {
+    item.filePath += `_${item.index}`
+  }
+  item.sourceContent = content
 
   if (!item.attrs) {
     item.attrs = {}
