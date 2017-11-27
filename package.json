@@ -10,15 +10,11 @@
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "chokidar": "^1.6.1",
-    "es6-promisify": "^5.0.0",
     "hash-sum": "^1.0.2",
-    "minimist": "^1.2.0",
     "postcss": "^6.0.14",
     "postcss-modules": "^1.1.0",
     "postcss-plugin-composition": "^0.1.1",
     "postcss-selector-parser": "^2.2.2",
-    "rename": "^1.0.3",
     "source-map": "^0.5.6",
     "vue-template-compiler": "^2.5.8",
     "vue-template-es2015-compiler": "^1.6.0"

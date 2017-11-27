@@ -1,11 +1,10 @@
 import PostCSS from 'postcss'
-import Promisify from 'es6-promisify'
 import PostCSSModules from 'postcss-modules'
 import PostCSSComposition from 'postcss-plugin-composition'
 
 import * as VueCompiler from 'vue-template-compiler'
 import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
-import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
+import { SourceNode, SourceMapConsumer } from 'source-map'
 
 import GenId from './GenId'
 import PostCSSScope from './PostCSSScope'
