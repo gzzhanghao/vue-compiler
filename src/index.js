@@ -303,9 +303,9 @@ async function generate(filePath, components, options) {
     }
 
     if (cssModules) {
-      for (const [key, val] of Object.entries(cssModules)) {
+      for (const key of Object.keys(cssModules)) {
         rootNode.add([
-          'Object.defineProperty(__vue_options__, ', JSON.stringify(key), ', { get: function() { return ', JSON.stringify(val), ' } })\n',
+          'Object.defineProperty(__vue_options__, ', JSON.stringify(key), ', { get: function() { return ', JSON.stringify(cssModules[key]), ' } })\n',
         ])
       }
     }
