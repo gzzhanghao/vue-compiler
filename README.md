@@ -45,7 +45,7 @@ type CompilerOptions = {
   includeFileName?: boolean // false
   // inject file path as module.__file
 
-  compilerOptions?: Object // null
+  compilerOptions?: Vue.CompilerOptions // null
   // options for vue template compiler
 
   extractStyles?: boolean // false
@@ -125,7 +125,25 @@ type WarningMessage = {
   end?: number
 }
 
-type CustomCompilerGetter = (item: SFCBlock | SFCCustomBlock, options: CompilerOptions)?: CustomCompiler | false
+type CustomCompilerGetter = (item: BlockItem, options: CompilerOptions)?: CustomCompiler | false
 
-type CustomCompiler = (item: SFCBlock, options: Object): Promise<CodeResult & { warnings }>
+type CustomCompiler = (item: BlockItem, options: Object): Promise<CodeResult & { warnings }>
+
+type BlockItem = SFCBlock & {
+
+  index?: number
+  // exists if the block is a style block or a custom block
+
+  filePath: string
+  // origin file path passed into the compiler
+
+  content: string
+  // source content
+
+  node: SourceNode
+  // source node generated from filePath and content
+
+  warnings: Array<WarningMessage>
+  // warnings comes from custom compilers
+}
 ```
