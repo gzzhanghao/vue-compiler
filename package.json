@@ -1,6 +1,6 @@
 {
   "name": "@gzzhanghao/vue-compiler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "lib",
   "scripts": {
     "watch": "babel src -d lib --watch",
@@ -37,8 +37,5 @@
     "url": "https://github.com/gzzhanghao/vue-component-compiler/issues"
   },
   "homepage": "https://github.com/gzzhanghao/vue-component-compiler#readme",
-  "description": "A standalone vue component compiler",
-  "bin": {
-    "vue-compile": "./bin/vue-compile.js"
-  }
+  "description": "A standalone vue component compiler"
 }
