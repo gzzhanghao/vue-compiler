@@ -97,8 +97,11 @@ export default async function Compile(filePath, content, options_ = {}) {
  */
 async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
-  const extractedStyles = []
+  const hookNode = new SourceNode(null, null, filePath)
 
+  const isFunctional = components.template && components.template.attrs.functional
+
+  const extractedStyles = []
   let warnings = []
 
   let hasScopedStyles = false
@@ -144,7 +147,7 @@ async function generate(filePath, components, options) {
       '  console.error(', JSON.stringify(`[vue-compiler] ${filePath}: Named exports are not supported in *.vue files.`), ')\n',
       '}\n',
     ])
-    if (components.template && !components.template.attrs.functional) {
+    if (isFunctional) {
       rootNode.add([
         'if (__vue_options__.functional) {\n',
         '  console.error(', JSON.stringify(`[vue-compiler] ${filePath}: Functional property should be defined on the <template> tag.`), ')\n',
@@ -163,7 +166,7 @@ async function generate(filePath, components, options) {
       '__vue_options__.render = __vue_template__.render\n',
       '__vue_options__.staticRenderFns = __vue_template__.staticRenderFns\n',
     ])
-    if (components.template.attrs.functional) {
+    if (isFunctional) {
       rootNode.add('__vue_options__.functional = true\n')
     }
     warnings = warnings.concat(components.template.warnings || [])
@@ -304,10 +307,28 @@ async function generate(filePath, components, options) {
 
     if (cssModules) {
       for (const key of Object.keys(cssModules)) {
-        rootNode.add([
-          'Object.defineProperty(__vue_options__, ', JSON.stringify(key), ', { get: function() { return ', JSON.stringify(cssModules[key]), ' } })\n',
+        hookNode.add([
+          '  Object.defineProperty(this, ', JSON.stringify(key), ', { get: function() { return ', JSON.stringify(cssModules[key]), ' } })\n',
         ])
       }
+    }
+  }
+
+  /**
+   * Render hook
+   */
+  if (hookNode.children.length) {
+    rootNode.add([ 'function __vue_hook__() {\n', hookNode, '}\n'])
+    if (!isFunctional) {
+      rootNode.add('__vue_options__.beforeCreate = [].concat(__vue_options__.beforeCreate || [], __vue_hook__)\n')
+    } else {
+      rootNode.add([
+        'var __vue_render__ = __vue_options__.render\n',
+        '__vue_options__.render = function renderWithStyleInjection (h, context) {\n',
+        '  __vue_hook__.call(context)\n',
+        '  __vue_render__.call(this, h, context)\n',
+        '}\n',
+      ])
     }
   }
 
