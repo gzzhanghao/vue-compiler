@@ -12,6 +12,11 @@ import PostCSSScope from './PostCSSScope'
 /**
  * Default transform options
  */
+
+const DefaultHotAPI = 'require("vue-hot-reload-api")'
+
+const DefaultVueModule = 'require("vue")'
+
 const DefaultOptions = {
 
   compilers: {},
@@ -383,14 +388,18 @@ async function generate(filePath, components, options) {
 
     rootNode.add([
       'if (module.hot) (function() {\n',
-      '  var hotAPI = require(', JSON.stringify(options.hotReload.module), ')\n',
+      '  var __vue_hot_api__ = ', options.hotReload.hotAPI || DefaultHotAPI, '\n',
+      '  __vue_hot_api__.install(', options.hotReload.vueModule || DefaultVueModule, ')\n',
+      '  if (!__vue_hot_api__.compatible) {\n',
+      '    return\n',
+      '  }\n',
       '  module.hot.accept()\n',
       '  if (!module.hot.data) {\n',
-      '    hotAPI.createRecord(', JSON.stringify(scopeId), ', module.exports)\n',
+      '    __vue_hot_api__.createRecord(', JSON.stringify(scopeId), ', module.exports)\n',
       '  } else if (module.exports.functional) {\n',
-      '    hotAPI.rerender(', JSON.stringify(scopeId), ', module.exports)\n',
+      '    __vue_hot_api__.rerender(', JSON.stringify(scopeId), ', module.exports)\n',
       '  } else {\n',
-      '    hotAPI.reload(', JSON.stringify(scopeId), ', module.exports)\n',
+      '    __vue_hot_api__.reload(', JSON.stringify(scopeId), ', module.exports)\n',
       '  }\n',
       '})()\n',
     ])

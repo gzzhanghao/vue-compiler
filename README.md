@@ -54,7 +54,7 @@ type CompilerOptions = {
 
   styleLoader?: string // "loadCss"
   // method to load css strings if not extracted
-  // styles will be loaded with `${styleLoader}(${css_string}, ${scopeId})`
+  // styles will be loaded with `${styleLoader}(${cssString}, ${scopeId})`
 
   postcss?: Array<PostCSSPlugin> // []
   // PostCSS plugin list
@@ -83,11 +83,14 @@ type CompilerOptions = {
     // keys will be matched to block's lang attribute and type
   }
 
-  hotReload?: { // null
+  hotReload?: { // false
     // hot reload options
 
-    module: string
-    // eg: "vue-hot-reload-api"
+    hotAPI?: string // 'require("vue-hot-reload-api")'
+    // reference to vue hot reload api
+
+    vueModule?: string // 'require("vue")'
+    // reference to vue module
   }
 }
 
