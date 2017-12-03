@@ -131,19 +131,25 @@ type CustomCompiler = (item: BlockItem, options: Object): Promise<CodeResult & {
 
 type BlockItem = SFCBlock & {
 
+  warnings: Array<WarningMessage>
+  // warnings comes from custom compilers
+
+  line: number
+  // zero-based line number that block begins
+
+  sourceContent: string
+  // origin block content
+
+  content: string
+  // line-padded block content
+
   index?: number
   // exists if the block is a style block or a custom block
 
   filePath: string
-  // origin file path passed into the compiler
-
-  content: string
-  // source content
+  // file path passed to the compiler
 
   node: SourceNode
   // source node generated from filePath and content
-
-  warnings: Array<WarningMessage>
-  // warnings comes from custom compilers
 }
 ```

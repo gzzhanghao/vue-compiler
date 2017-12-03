@@ -506,13 +506,14 @@ function setSourceInfo(item, filePath, content) {
   item.warnings = []
 
   item.line = content.slice(0, item.start).split(/\r?\n/g).length
+
+  item.sourceContent = content
   item.content = Array(item.line).join('\n') + item.content
 
   item.filePath = `${filePath}?${item.type}`
   if (item.index != null) {
     item.filePath += `_${item.index}`
   }
-  item.sourceContent = content
 
   if (!item.attrs) {
     item.attrs = {}
