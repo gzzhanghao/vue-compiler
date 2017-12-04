@@ -437,7 +437,7 @@ async function generate(filePath, components, options) {
  * @param {CompilerOptions} options
  */
 async function processItem(item, options) {
-  let compile = options.getCompiler(item, options)
+  let compile = await options.getCompiler(item, options)
 
   if (!compile && compile !== false) {
     compile = options.compilers[item.lang] || options.compilers[item.type]

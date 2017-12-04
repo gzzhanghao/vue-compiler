@@ -122,7 +122,7 @@ type WarningMessage = {
   end?: number
 }
 
-type CustomCompilerGetter = (item: BlockItem, options: CompilerOptions)?: CustomCompiler | false
+type CustomCompilerGetter = (item: BlockItem, options: CompilerOptions)?: Promise<CustomCompiler | false>
 
 type CustomCompiler = (item: BlockItem, options: Object): Promise<CodeResult & { warnings }>
 
