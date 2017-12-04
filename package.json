@@ -27,11 +27,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gzzhanghao/vue-component-compiler.git"
+    "url": "git+https://github.com/gzzhanghao/vue-compiler.git"
   },
   "bugs": {
-    "url": "https://github.com/gzzhanghao/vue-component-compiler/issues"
+    "url": "https://github.com/gzzhanghao/vue-compiler/issues"
   },
-  "homepage": "https://github.com/gzzhanghao/vue-component-compiler#readme",
+  "homepage": "https://github.com/gzzhanghao/vue-compiler#readme",
   "description": "A standalone vue component compiler"
 }
