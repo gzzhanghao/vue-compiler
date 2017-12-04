@@ -1,19 +1,13 @@
-# Vue component compiler
+# Vue compiler
 
-Yet another vue component compiler.
+A standalone vue component compiler.
 
 __NOTE: Please check out [vue-loader](https://github.com/vuejs/vue-loader) and [vueify](https://github.com/vuejs/vueify) if you'd like to run the compiler with webpack or browserify__
-
-## Installation
-
-```bash
-npm i -S @gzzhanghao/vue-compiler
-```
 
 ## Usage
 
 ```javascript
-const compile = require('@gzzhanghao/vue-compiler').default
+const compile = require('vue-compiler').default
 
 const filePath = 'index.vue'
 
