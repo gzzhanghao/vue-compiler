@@ -141,6 +141,22 @@ async function generate(filePath, components, options) {
     '}\n',
   ])
 
+  if (options.hotReload) {
+    scopeId = GenId(filePath)
+
+    rootNode.add([
+      'var __vue_hot_api__\n',
+      'if (module.hot) {\n',
+      '  __vue_hot_api__ = ', options.hotReload.hotAPI || DefaultHotAPI, '\n',
+      '  __vue_hot_api__.install(', options.hotReload.vueModule || DefaultVueModule, ')\n',
+      '  if (!__vue_hot_api__.compatible) {\n',
+      '    return\n',
+      '  }\n',
+      '  module.hot.accept()\n',
+      '}\n',
+    ])
+  }
+
   if (options.includeFileName) {
     rootNode.add(['__vue_options__.__file = ', JSON.stringify(filePath), '\n'])
   }
@@ -171,6 +187,19 @@ async function generate(filePath, components, options) {
       '__vue_options__.render = __vue_template__.render\n',
       '__vue_options__.staticRenderFns = __vue_template__.staticRenderFns\n',
     ])
+    if (options.hotReload) {
+      rootNode.add([
+        'if (module.hot) {\n',
+        '  var __vue_render_fns__ = __vue_options__.staticRenderFns.concat(__vue_options__.render).join(";")\n',
+        '  module.hot.dispose(function(data) {\n',
+        '    data.renderFns = __vue_render_fns__\n',
+        '  })\n',
+        '  if (module.hot.data && module.hot.data.renderFns !== __vue_render_fns__) {\n',
+        '    __vue_hot_api__.rerender(', JSON.stringify(scopeId), ', __vue_options__)\n',
+        '  }\n',
+        '}\n',
+      ])
+    }
     if (isFunctional) {
       rootNode.add('__vue_options__.functional = true\n')
     }
@@ -338,6 +367,24 @@ async function generate(filePath, components, options) {
   }
 
   /**
+   * Hot reload
+   */
+
+  if (options.hotReload) {
+    rootNode.add([
+      'if (module.hot) {\n',
+      '  if (!module.hot.data) {\n',
+      '    __vue_hot_api__.createRecord(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '  } else if (__vue_options__.functional) {\n',
+      '    __vue_hot_api__.rerender(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '  } else {\n',
+      '    __vue_hot_api__.reload(', JSON.stringify(scopeId), ', __vue_options__)\n',
+      '  }\n',
+      '}\n',
+    ])
+  }
+
+  /**
    * Export module
    */
 
@@ -374,35 +421,6 @@ async function generate(filePath, components, options) {
         '})({ exports: {} })(module.exports)\n'
       ])
     }
-  }
-
-  /**
-   * Hot reload
-   */
-
-  if (options.hotReload) {
-
-    if (!scopeId) {
-      scopeId = GenId(filePath)
-    }
-
-    rootNode.add([
-      'if (module.hot) (function() {\n',
-      '  var __vue_hot_api__ = ', options.hotReload.hotAPI || DefaultHotAPI, '\n',
-      '  __vue_hot_api__.install(', options.hotReload.vueModule || DefaultVueModule, ')\n',
-      '  if (!__vue_hot_api__.compatible) {\n',
-      '    return\n',
-      '  }\n',
-      '  module.hot.accept()\n',
-      '  if (!module.hot.data) {\n',
-      '    __vue_hot_api__.createRecord(', JSON.stringify(scopeId), ', module.exports)\n',
-      '  } else if (module.exports.functional) {\n',
-      '    __vue_hot_api__.rerender(', JSON.stringify(scopeId), ', module.exports)\n',
-      '  } else {\n',
-      '    __vue_hot_api__.reload(', JSON.stringify(scopeId), ', module.exports)\n',
-      '  }\n',
-      '})()\n',
-    ])
   }
 
   /**
