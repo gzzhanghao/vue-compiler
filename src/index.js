@@ -43,6 +43,8 @@ const DefaultOptions = {
 
   compilerOptions: null,
 
+  serverRendering: false,
+
   getCompiler: () => {},
 }
 
@@ -494,6 +496,7 @@ function compileHtml(item, options) {
     return
   }
 
+  const method = options.serverRendering ? 'ssrCompile' : 'compile'
   const result = VueCompiler.compile(item.node.toString(), { outputSourceRange: true, ...options.compilerOptions })
   const fnArgs = item.attrs.functional ? '_h,_vm' : ''
 
