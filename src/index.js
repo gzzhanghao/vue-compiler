@@ -47,7 +47,7 @@ const DefaultOptions = {
 
   getCompiler: () => {},
 
-  compileTemplateScript: () => {},
+  compileTemplateScript: code => code,
 }
 
 /**
