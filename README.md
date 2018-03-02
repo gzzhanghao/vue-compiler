@@ -66,6 +66,9 @@ type CompilerOptions = {
   sourceMapRoot?: string // "vue:///"
   // source root
 
+  compileTemplateScript?: (code: string): string
+  // compile vue template script
+
   getCompiler?: CustomCompilerGetter // noop
   // get compiler for a block
   // return false to prevent resolving compiler from options.compilers

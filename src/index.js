@@ -46,6 +46,8 @@ const DefaultOptions = {
   serverRendering: false,
 
   getCompiler: () => {},
+
+  compileTemplateScript: () => {},
 }
 
 /**
@@ -507,6 +509,8 @@ function compileHtml(item, options) {
   }
 
   code += '] })'
+
+  code = options.compileTemplateScript(code)
 
   code = BubleTransform(code, { transforms: { stripWith: true, stripWithFunctional: item.attrs.functional } }).code
 
