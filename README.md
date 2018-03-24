@@ -1,4 +1,6 @@
 # Vue compiler
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgzzhanghao%2Fvue-compiler.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgzzhanghao%2Fvue-compiler?ref=badge_shield)
+
 
 A standalone vue component compiler.
 
@@ -150,3 +152,7 @@ type BlockItem = SFCBlock & {
   // source node generated from filePath and content
 }
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgzzhanghao%2Fvue-compiler.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgzzhanghao%2Fvue-compiler?ref=badge_large)
