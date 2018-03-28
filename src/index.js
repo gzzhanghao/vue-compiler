@@ -351,7 +351,7 @@ function compileHtml(item, options) {
   }
 
   const method = options.serverRendering ? 'ssrCompile' : 'compile'
-  const result = VueCompiler.compile(item.node.toString(), { outputSourceRange: true, ...options.compilerOptions })
+  const result = VueCompiler.compile(item.node.toString(), options.compilerOptions)
   const fnArgs = item.attrs.functional ? '_h,_vm' : ''
 
   let code = `({ render: function(${fnArgs}) { ${result.render} }, staticRenderFns: [ `

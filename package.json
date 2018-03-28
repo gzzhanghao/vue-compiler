@@ -5,7 +5,8 @@
   "scripts": {
     "watch": "babel src -d lib --watch",
     "build": "babel src -d lib",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "test": "jest"
   },
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
@@ -20,9 +21,13 @@
     "vue-template-es2015-compiler": "^1.6.0"
   },
   "devDependencies": {
+    "@vue/test-utils": "^1.0.0-beta.13",
     "babel-cli": "^6.18.0",
+    "babel-jest": "^22.4.3",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.5.2"
+    "babel-preset-env": "^1.5.2",
+    "es6-promisify": "^6.0.0",
+    "jest": "^22.4.3"
   },
   "repository": {
     "type": "git",
