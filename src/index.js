@@ -185,7 +185,7 @@ async function generate(filePath, components, options) {
 
       if (style.scoped) {
         hasScopedStyles = true
-        postcssPlugins.push(PostCSSScope({ scopeId }))
+        postcssPlugins.push(PostCSSScope({ id: scopeId }))
       }
 
       /**
