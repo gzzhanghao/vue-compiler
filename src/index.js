@@ -13,23 +13,15 @@ import PostCSSScope from './PostCSSScope'
  * Default transform options
  */
 
-const DefaultHotAPI = 'require("vue-hot-reload-api")'
-
-const DefaultVueModule = 'require("vue")'
-
 const DefaultOptions = {
 
-  compilers: {},
+  runtime: 'require("vue-compiler-runtime")',
 
   includeFileName: false,
-
-  showDevHints: false,
 
   postcss: [],
 
   extractStyles: false,
-
-  styleLoader: 'loadStyle',
 
   sourceMap: false,
 
@@ -39,11 +31,11 @@ const DefaultOptions = {
 
   postcssModules: null,
 
-  hotReload: false,
-
   compilerOptions: null,
 
   serverRendering: false,
+
+  compilers: {},
 
   getCompiler: () => {},
 }
@@ -106,77 +98,27 @@ async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
   const hookNode = new SourceNode(null, null, filePath)
 
-  const isFunctional = components.template && components.template.attrs.functional
-
+  const scopeId = GenId(filePath)
   const extractedStyles = []
-  let warnings = []
 
+  let warnings = []
   let hasScopedStyles = false
-  let scopeId = null
 
   /**
    * Process components.script
    */
 
+  rootNode.add(['module.exports = (', options.runtime, '\n)({\n'])
+
   if (components.script) {
+    rootNode.add('script: function(module, exports) {\n')
     if (components.script.attrs.src) {
-      rootNode.add(['exports = module.exports = ', components.script.node, '\n'])
+      rootNode.add(['module.exports = (', components.script.node, '\n)\n'])
     } else {
-      rootNode.add(['(function(){\n', components.script.node, '\n})()\n'])
+      rootNode.add([components.script.node, '\n'])
     }
+    rootNode.add('},\n')
     warnings = warnings.concat(components.script.warnings || [])
-  }
-
-  /**
-   * Normalize vue_exports and vue_options
-   */
-
-  rootNode.add([
-    '; (function() {\n',
-    'var __vue_exports__ = module.exports || {}\n',
-    'if (__vue_exports__.__esModule) {\n',
-    '  __vue_exports__ = __vue_exports__.default\n',
-    '}\n',
-    'var __vue_options__ = __vue_exports__\n',
-    'if (typeof __vue_exports__ === "function") {\n',
-    '  __vue_options__ = __vue_exports__.options\n',
-    '}\n',
-  ])
-
-  if (options.hotReload) {
-    scopeId = GenId(filePath)
-
-    rootNode.add([
-      'var __vue_hot_api__\n',
-      'if (module.hot) {\n',
-      '  __vue_hot_api__ = ', options.hotReload.hotAPI || DefaultHotAPI, '\n',
-      '  __vue_hot_api__.install(', options.hotReload.vueModule || DefaultVueModule, ')\n',
-      '  if (!__vue_hot_api__.compatible) {\n',
-      '    return\n',
-      '  }\n',
-      '  module.hot.accept()\n',
-      '}\n',
-    ])
-  }
-
-  if (options.includeFileName) {
-    rootNode.add(['__vue_options__.__file = ', JSON.stringify(filePath), '\n'])
-  }
-
-  if (options.showDevHints) {
-
-    rootNode.add([
-      'if (__vue_exports__.__esModule && Object.keys(__vue_exports__).some(function(key) { return key !== "default" && key !== "__esModule" })) {\n',
-      '  console.error(', JSON.stringify(`[vue-compiler] ${filePath}: Named exports are not supported in *.vue files.`), ')\n',
-      '}\n',
-    ])
-    if (isFunctional) {
-      rootNode.add([
-        'if (__vue_options__.functional) {\n',
-        '  console.error(', JSON.stringify(`[vue-compiler] ${filePath}: Functional property should be defined on the <template> tag.`), ')\n',
-        '}\n',
-      ])
-    }
   }
 
   /**
@@ -184,26 +126,9 @@ async function generate(filePath, components, options) {
    */
 
   if (components.template) {
-    rootNode.add([
-      'var __vue_template__ = ', components.template.node, '\n',
-      '__vue_options__.render = __vue_template__.render\n',
-      '__vue_options__.staticRenderFns = __vue_template__.staticRenderFns\n',
-    ])
-    if (options.hotReload) {
-      rootNode.add([
-        'if (module.hot) {\n',
-        '  var __vue_render_fns__ = __vue_options__.staticRenderFns.concat(__vue_options__.render).join(";")\n',
-        '  module.hot.dispose(function(data) {\n',
-        '    data.renderFns = __vue_render_fns__\n',
-        '  })\n',
-        '  if (module.hot.data && module.hot.data.renderFns !== __vue_render_fns__) {\n',
-        '    __vue_hot_api__.rerender(', JSON.stringify(scopeId), ', __vue_options__)\n',
-        '  }\n',
-        '}\n',
-      ])
-    }
-    if (isFunctional) {
-      rootNode.add('__vue_options__.functional = true\n')
+    rootNode.add(['template: ', components.template.node, ',\n'])
+    if (components.template.attrs.functional) {
+      rootNode.add('functional: true,\n')
     }
     warnings = warnings.concat(components.template.warnings || [])
   }
@@ -213,21 +138,18 @@ async function generate(filePath, components, options) {
    */
 
   if (components.styles.length) {
+    const externalStyles = []
+    const inlineStyles = []
 
-    let styleNode = null
+    let hasScopedStyles = false
     let cssModules = null
 
-    if (!options.extractStyles) {
-      styleNode = new SourceNode(null, null, filePath)
-    }
-
     for (const style of components.styles) {
-
       let node = style.node
       let postcssPlugins = []
 
       if (style.attrs.src) {
-        rootNode.add([node, '\n'])
+        externalStyles.push(node)
         continue
       }
 
@@ -239,28 +161,18 @@ async function generate(filePath, components, options) {
        * Module style
        */
 
-      if (style.module) {
-
+      if (style.attrs.module) {
+        let name = '$style'
+        if (style.attrs.module !== true) {
+          name = style.attrs.module
+        }
         if (!cssModules) {
-          cssModules = Object.create(null)
+          cssModules = {}
         }
-
-        const moduleName = (style.module === true) ? '$style' : style.module
-
-        if (cssModules[moduleName]) {
-          warnings.push({ msg: `CSS module name '${moduleName}' conflicts`, start: style.blockStart })
-
-          if (options.showDevHints) {
-            rootNode.add([
-              'console.error(', JSON.stringify(`[vue-compiler] ${filePath}: CSS module name '${moduleName}' already exists.`), ')\n',
-            ])
-          }
-        }
-
         postcssPlugins.push(PostCSSComposition([
           PostCSSModules({
-            getJSON(fileName, json) {
-              cssModules[moduleName] = json
+            getJSON(fileName, mapping) {
+              cssModules[name] = mapping
             },
             ...options.postcssModules,
           }),
@@ -272,9 +184,6 @@ async function generate(filePath, components, options) {
        */
 
       if (style.scoped) {
-        if (!scopeId) {
-          scopeId = GenId(filePath)
-        }
         hasScopedStyles = true
         postcssPlugins.push(PostCSSScope({ scopeId }))
       }
@@ -304,7 +213,7 @@ async function generate(filePath, components, options) {
        */
 
       if (!options.extractStyles) {
-        styleNode.add([node, '\n'])
+        inlineStyles.push(node)
       } else if (options.styleSourceMap) {
         extractedStyles.push(node.toStringWithSourceMap({ sourceRoot: options.sourceMapRoot }))
       } else {
@@ -318,112 +227,60 @@ async function generate(filePath, components, options) {
      * Bundle styles
      */
 
-    if (!options.extractStyles && styleNode.children.length) {
-      rootNode.add([options.styleLoader, '('])
-      if (options.styleSourceMap) {
-        const result = styleNode.toStringWithSourceMap({ sourceRoot: options.sourceMapRoot })
-        rootNode.add(JSON.stringify(result.code + `/*# sourceMappingURL=data:application/json;base64,${new Buffer(result.map.toString()).toString('base64')} */`))
-      } else {
-        rootNode.add(JSON.stringify(styleNode.toString()))
-      }
-      if (!scopeId) {
-        scopeId = GenId(filePath)
-      }
-      rootNode.add([', ', JSON.stringify(scopeId)])
-      rootNode.add(')\n')
+    if (hasScopedStyles) {
+      rootNode.add('hasScopedStyles: true,\n')
     }
 
-    /**
-     * Meta data
-     */
-
-    if (hasScopedStyles) {
-      rootNode.add(['__vue_options__._scopeId = ', JSON.stringify(scopeId), '\n'])
+    if (externalStyles.length || inlineStyles.length) {
+      rootNode.add('styles: [\n')
+      for (const externalNode of externalStyles) {
+        rootNode.add(['(', externalNode, '\n),\n'])
+      }
+      if (inlineStyles.length) {
+        const inlineNode = new SourceNode(null, null, filePath, inlineStyles)
+        if (options.styleSourceMap) {
+          const result = inlineNode.toStringWithSourceMap({ sourceRoot: options.sourceMapRoot })
+          rootNode.add(JSON.stringify(result.code + `/*# sourceMappingURL=data:application/json;base64,${new Buffer(result.map.toString()).toString('base64')} */`))
+        } else {
+          rootNode.add(JSON.stringify(inlineNode.toString()))
+        }
+        rootNode.add(',\n')
+      }
+      rootNode.add('],\n')
     }
 
     if (cssModules) {
-      for (const key of Object.keys(cssModules)) {
-        hookNode.add([
-          '  Object.defineProperty(this, ', JSON.stringify(key), ', { get: function() { return ', JSON.stringify(cssModules[key]), ' } })\n',
-        ])
-      }
+      rootNode.add(['cssModules: ', JSON.stringify(cssModules), ',\n'])
     }
   }
-
-  /**
-   * Render hook
-   */
-  if (hookNode.children.length) {
-    rootNode.add([ 'function __vue_hook__() {\n', hookNode, '}\n'])
-    if (!isFunctional) {
-      rootNode.add('__vue_options__.beforeCreate = [].concat(__vue_options__.beforeCreate || [], __vue_hook__)\n')
-    } else {
-      rootNode.add([
-        'var __vue_render__ = __vue_options__.render\n',
-        '__vue_options__.render = function renderWithStyleInjection (h, context) {\n',
-        '  __vue_hook__.call(context)\n',
-        '  __vue_render__.call(this, h, context)\n',
-        '}\n',
-      ])
-    }
-  }
-
-  /**
-   * Hot reload
-   */
-
-  if (options.hotReload) {
-    rootNode.add([
-      'if (module.hot) {\n',
-      '  if (!module.hot.data) {\n',
-      '    __vue_hot_api__.createRecord(', JSON.stringify(scopeId), ', __vue_options__)\n',
-      '  } else if (__vue_options__.functional) {\n',
-      '    __vue_hot_api__.rerender(', JSON.stringify(scopeId), ', __vue_options__)\n',
-      '  } else {\n',
-      '    __vue_hot_api__.reload(', JSON.stringify(scopeId), ', __vue_options__)\n',
-      '  }\n',
-      '}\n',
-    ])
-  }
-
-  /**
-   * Export module
-   */
-
-  rootNode.add([
-    'module.exports = __vue_exports__\n',
-    '})()\n',
-  ])
 
   /**
    * Custom blocks
    */
 
-  for (const block of components.customBlocks) {
-    if (block.attrs.src) {
-      rootNode.add([
-        '; (function() {\n',
-        '  var __vue_block__ = ', block.node, '\n',
-        '  if (typeof __vue_block__ === "function") {\n',
-        '    __vue_block__(module.exports)\n',
-        '  }\n',
-        '})()\n',
-      ])
-    } else {
-      rootNode.add([
-        '; (function(module) {\n',
-        '  var exports = module.exports\n',
-        '  ; (function() {\n',
-        '    ', block.node, '\n',
-        '  })()\n',
-        '  if (typeof module.exports === "function") {\n',
-        '    return module.exports\n',
-        '  }\n',
-        '  return function() {}\n',
-        '})({ exports: {} })(module.exports)\n'
-      ])
+  if (components.customBlocks.length) {
+    rootNode.add('customBlocks: [\n')
+    for (const block of components.customBlocks) {
+      rootNode.add('function(module, exports) {\n')
+      if (block.attrs.src) {
+        rootNode.add(['module.exports = (', block.node, '\n)\n'])
+      } else {
+        rootNode.add([block.node, '\n'])
+      }
+      rootNode.add('},\n')
+      warnings = warnings.concat(block.warnings || [])
     }
+    rootNode.add('],\n')
   }
+
+  if (options.includeFileName) {
+    rootNode.add(['file: ', JSON.stringify(filePath), ',\n'])
+  }
+
+  rootNode.add([
+    'scopeId: ', JSON.stringify(scopeId), ',\n',
+    '})\n',
+  ])
 
   /**
    * Return result
@@ -438,10 +295,7 @@ async function generate(filePath, components, options) {
   }
 
   result.warnings = warnings
-
-  if (scopeId) {
-    result.scopeId = scopeId
-  }
+  result.scopeId = scopeId
 
   if (options.extractStyles) {
     result.styles = extractedStyles
