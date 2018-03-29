@@ -24,7 +24,7 @@ export async function load(filename, options = {}) {
   if (res.errors) {
     throw new Error(`Compile error: ${res.errors.join('\n')}`)
   }
-  const mod = { exports: {} }
+  const mod = { exports: {}, hot: 'hotAPI' }
   vm.runInNewContext(res.code, { module: mod, exports: mod.exports, ...options.sandbox }, { filename })
   return mod.exports
 }

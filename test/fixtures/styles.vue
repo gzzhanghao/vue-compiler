@@ -1,3 +1,8 @@
+<template>
+  <div :class="['scoped', $style.module, custom.custom]" />
+</template>
+
+
 <style scoped>
 .scoped {
   color: black;

@@ -1,3 +1,9 @@
+<template>
+  <div />
+</template>
+
 <custom-block lang="javascript">
-  module.exports = 'foo'
+  module.exports = function(module) {
+    module.options.foo = 'bar'
+  }
 </custom-block>

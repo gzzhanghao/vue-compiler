@@ -1,6 +1,6 @@
 export default function Runtime(options) {
   return component => {
-    const scriptExports = {}
+    let scriptExports = {}
 
     if (component.script) {
       scriptExports = load(component.script)
@@ -57,13 +57,13 @@ export default function Runtime(options) {
     if (module.hook) {
       if (scriptOptions.functional) {
         const originalRender = scriptOptions.render
-        scriptOptions._injectStyles = hook
+        scriptOptions._injectStyles = module.hook
         scriptOptions.render = function renderWithStyleInjection(h, context) {
-          hook.call(context)
+          module.hook.call(context)
           return originalRender(h, context)
         }
       } else {
-        scriptOptions.beforeCreate = [].concat(scriptOptions.beforeCreate || [], hook)
+        scriptOptions.beforeCreate = [].concat(scriptOptions.beforeCreate || [], module.hook)
       }
     }
 

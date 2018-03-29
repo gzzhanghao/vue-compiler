@@ -1,6 +1,6 @@
 <template>
   <div>
-    Lorem {{ foo }}
+    <span>Lorem {{ foo }}</span>
   </div>
 </template>
 
@@ -9,7 +9,7 @@
 
     data() {
       return {
-        foo: 'bar',
+        foo: 'ipsum',
       }
     },
   }

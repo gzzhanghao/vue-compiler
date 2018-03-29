@@ -56,7 +56,7 @@ test('custom blocks', async () => {
   const component = await load('./fixtures/customblock')
 
   expect(component.customBlocks).toHaveLength(1)
-  expect(evaluate(component.customBlocks[0])).toEqual('foo')
+  expect(typeof evaluate(component.customBlocks[0])).toEqual('function')
 })
 
 test('external blocks', async () => {
@@ -85,7 +85,7 @@ test('functional component', async () => {
 test('hot reload', async () => {
   const component = await load('./fixtures/basic', { hotReload: true })
 
-  expect(component).toHaveProperty('hotAPI', undefined)
+  expect(component.hotAPI).toEqual('hotAPI')
 })
 
 test('include file name', async () => {
