@@ -98,7 +98,7 @@ export default async function assemble(filePath, components, options) {
        * Scoped style
        */
 
-      if (style.scoped) {
+      if (style.attrs.scoped) {
         hasScopedStyles = true
         postcssPlugins.push(postcssScopeId(scopeId))
       }
