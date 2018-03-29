@@ -1,6 +1,6 @@
+import transpile from 'vue-template-es2015-compiler'
 import { SourceNode } from 'source-map'
 import * as VueCompiler from 'vue-template-compiler'
-import { transform as bubleTransform } from 'vue-template-es2015-compiler/buble'
 
 /**
  * Compile html to vue template functions
@@ -25,7 +25,7 @@ export default function compileTemplate(item, options) {
 
   code += '] })'
 
-  code = bubleTransform(code, { transforms: { stripWith: true, stripWithFunctional: item.attrs.functional } }).code
+  code = transpile(code, { transforms: { stripWithFunctional: item.attrs.functional } })
 
   item.warnings = item.warnings.concat(result.errors).concat(result.tips)
   item.node = new SourceNode(null, null, item.node.source, code)
