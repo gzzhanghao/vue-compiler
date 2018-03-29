@@ -1,13 +1,13 @@
-import PostCSS from 'postcss'
-import PostCSSModules from 'postcss-modules'
-import PostCSSComposition from 'postcss-plugin-composition'
+import postcss from 'postcss'
+import postcssModules from 'postcss-modules'
+import postcssComposition from 'postcss-plugin-composition'
 
 import * as VueCompiler from 'vue-template-compiler'
-import { transform as BubleTransform } from 'vue-template-es2015-compiler/buble'
+import { transform as bubleTransform } from 'vue-template-es2015-compiler/buble'
 import { SourceNode, SourceMapConsumer } from 'source-map'
 
-import GenId from './GenId'
-import PostCSSScope from './PostCSSScope'
+import hash from './hash'
+import postcssScopeId from './plugins/scope-id'
 
 /**
  * Default transform options
@@ -94,9 +94,8 @@ export default async function Compile(filePath, content, options_ = {}) {
  */
 async function generate(filePath, components, options) {
   const rootNode = new SourceNode(null, null, filePath)
-  const hookNode = new SourceNode(null, null, filePath)
 
-  const scopeId = GenId(filePath)
+  const scopeId = hash(filePath)
   const extractedStyles = []
 
   let warnings = []
@@ -139,7 +138,6 @@ async function generate(filePath, components, options) {
     const externalStyles = []
     const inlineStyles = []
 
-    let hasScopedStyles = false
     let cssModules = null
 
     for (const style of components.styles) {
@@ -164,8 +162,8 @@ async function generate(filePath, components, options) {
         if (!cssModules) {
           cssModules = {}
         }
-        postcssPlugins.push(PostCSSComposition([
-          PostCSSModules({
+        postcssPlugins.push(postcssComposition([
+          postcssModules({
             getJSON(fileName, mapping) {
               cssModules[name] = mapping
             },
@@ -180,7 +178,7 @@ async function generate(filePath, components, options) {
 
       if (style.scoped) {
         hasScopedStyles = true
-        postcssPlugins.push(PostCSSScope({ id: scopeId }))
+        postcssPlugins.push(postcssScopeId({ id: scopeId }))
       }
 
       /**
@@ -194,7 +192,7 @@ async function generate(filePath, components, options) {
           postcssMapOpts = { inline: false, annotation: false, prev: node.toStringWithSourceMap().map.toJSON() }
         }
 
-        const result = await PostCSS(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: style.filePath, to: style.filePath })
+        const result = await postcss(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: style.filePath, to: style.filePath })
 
         if (!options.styleSourceMap) {
           node = new SourceNode(null, null, node.source, result.css)
@@ -348,13 +346,12 @@ async function processItem(item, options) {
  * @param {CompilerOptions} options
  */
 function compileHtml(item, options) {
-
   if (item.attrs.src) {
     return
   }
 
   const method = options.serverRendering ? 'ssrCompile' : 'compile'
-  const result = VueCompiler.compile(item.node.toString(), options.compilerOptions)
+  const result = VueCompiler[method](item.node.toString(), options.compilerOptions)
   const fnArgs = item.attrs.functional ? '_h,_vm' : ''
 
   let code = `({ render: function(${fnArgs}) { ${result.render} }, staticRenderFns: [ `
@@ -365,7 +362,7 @@ function compileHtml(item, options) {
 
   code += '] })'
 
-  code = BubleTransform(code, { transforms: { stripWith: true, stripWithFunctional: item.attrs.functional } }).code
+  code = bubleTransform(code, { transforms: { stripWith: true, stripWithFunctional: item.attrs.functional } }).code
 
   item.warnings = item.warnings.concat(result.errors).concat(result.tips)
   item.node = new SourceNode(null, null, item.node.source, code)

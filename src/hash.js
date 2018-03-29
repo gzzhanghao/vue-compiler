@@ -1,4 +1,4 @@
-import HashSum from 'hash-sum'
+import hashsum from 'hash-sum'
 
 const idCache = Object.create(null)
 
@@ -7,9 +7,9 @@ const idCache = Object.create(null)
  * @param {string} content
  * @return {string} Hash sum for the file path
  */
-export default function GenId(content) {
+export default function hash(content) {
   if (!idCache[content]) {
-    idCache[content] = `data-v-${HashSum(content)}`
+    idCache[content] = `data-v-${hashsum(content)}`
   }
   return idCache[content]
 }

@@ -23,10 +23,13 @@
   "devDependencies": {
     "@vue/test-utils": "^1.0.0-beta.13",
     "babel-cli": "^6.18.0",
+    "babel-eslint": "^8.2.2",
     "babel-jest": "^22.4.3",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.5.2",
     "es6-promisify": "^6.0.0",
+    "eslint": "^4.19.1",
+    "eslint-config-google": "^0.9.1",
     "jest": "^22.4.3",
     "vue": "^2.5.16"
   },
