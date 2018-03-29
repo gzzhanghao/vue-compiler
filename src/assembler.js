@@ -117,7 +117,7 @@ export default async function assemble(filePath, components, options) {
         const result = await postcss(postcssPlugins).process(node.toString(), { map: postcssMapOpts, from: style.filePath, to: style.filePath })
 
         if (!options.styleSourceMap) {
-          node = new SourceNode(null, null, node.source, result.css)
+          node = new SourceNode(null, null, style.filePath, result.css)
         } else {
           node = SourceNode.fromStringWithSourceMap(result.css, new SourceMapConsumer(result.map.toJSON()))
         }
