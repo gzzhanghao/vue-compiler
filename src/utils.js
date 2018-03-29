@@ -7,7 +7,7 @@ const idCache = Object.create(null)
  * @param {string} content
  * @return {string} Hash sum for the file path
  */
-export default function hash(content) {
+export function genId(content) {
   if (!idCache[content]) {
     idCache[content] = `data-v-${hashsum(content)}`
   }

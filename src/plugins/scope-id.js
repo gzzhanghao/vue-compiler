@@ -3,7 +3,7 @@
 import postcss from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 
-export default postcss.plugin('add-id', ({ id }) => root => {
+export default postcss.plugin('add-id', ({ id }) => (root) => {
   const keyframes = Object.create(null)
 
   root.each(function rewriteSelector(node) {
@@ -19,10 +19,10 @@ export default postcss.plugin('add-id', ({ id }) => root => {
       }
       return
     }
-    node.selector = selectorParser(selectors => {
-      selectors.each(selector => {
+    node.selector = selectorParser((selectors) => {
+      selectors.each((selector) => {
         let node = null
-        selector.each(n => {
+        selector.each((n) => {
           // ">>>" combinator
           if (n.type === 'combinator' && n.value === '>>>') {
             n.value = ' '
@@ -43,7 +43,7 @@ export default postcss.plugin('add-id', ({ id }) => root => {
           }
         })
         selector.insertAfter(node, selectorParser.attribute({
-          attribute: id
+          attribute: id,
         }))
       })
     }).process(node.selector).result
@@ -54,19 +54,19 @@ export default postcss.plugin('add-id', ({ id }) => root => {
   // Caveat: this only works for keyframes and animation rules in the same
   // <style> element.
   if (Object.keys(keyframes).length) {
-    root.walkDecls(decl => {
+    root.walkDecls((decl) => {
       // individual animation-name declaration
       if (/-?animation-name$/.test(decl.prop)) {
         decl.value = decl.value.split(',')
-          .map(v => keyframes[v.trim()] || v.trim())
+          .map((v) => keyframes[v.trim()] || v.trim())
           .join(',')
       }
       // shorthand
       if (/-?animation$/.test(decl.prop)) {
         decl.value = decl.value.split(',')
-          .map(v => {
+          .map((v) => {
             const vals = v.trim().split(/\s+/)
-            const i = vals.findIndex(val => keyframes[val])
+            const i = vals.findIndex((val) => keyframes[val])
             if (i !== -1) {
               vals.splice(i, 1, keyframes[vals[i]])
               return vals.join(' ')

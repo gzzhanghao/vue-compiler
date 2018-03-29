@@ -5,6 +5,6 @@ module.exports = {
   testRegex: '.*\.spec.js',
   collectCoverageFrom: [
     'src/**/*.js',
-    '!src/PostCSSScope.js',
+    '!src/plugins/**/*.js',
   ],
 }

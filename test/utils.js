@@ -3,10 +3,15 @@ import vm from 'vm'
 import path from 'path'
 import { promisify } from 'es6-promisify'
 
-import compileVue from '../src'
+import compiler from '../src'
 
 const readFile = promisify(fs.readFile)
 
+/**
+ * @param {string} filename
+ * @param {Object} options
+ * @return {BuildResult}
+ */
 export async function compile(filename, options) {
   let filePath = path.resolve(__dirname, filename)
 
@@ -16,11 +21,16 @@ export async function compile(filename, options) {
 
   const code = await readFile(filePath, 'utf-8')
 
-  return compileVue(filePath, code, options)
+  return compiler(filePath, code, options)
 }
 
+/**
+ * @param {string} filename
+ * @param {Object} options
+ * @return {VueComponent}
+ */
 export async function load(filename, options = {}) {
-  const res = await compile(filename, { ...options, runtime: 'v => v' })
+  const res = await compile(filename, { ...options, normalizer: 'v => v' })
   if (res.errors) {
     throw new Error(`Compile error: ${res.errors.join('\n')}`)
   }
@@ -29,6 +39,10 @@ export async function load(filename, options = {}) {
   return mod.exports
 }
 
+/**
+ * @param {Function} factory
+ * @return {any}
+ */
 export function evaluate(factory) {
   const mod = { exports: {} }
   factory(mod, mod.exports)

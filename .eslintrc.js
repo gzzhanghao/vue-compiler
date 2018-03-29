@@ -15,5 +15,6 @@ module.exports = {
     'semi': [2, 'never'],
     'object-curly-spacing': [2, 'always'],
     'max-len': 0,
+    'no-undef': 2,
   },
 }

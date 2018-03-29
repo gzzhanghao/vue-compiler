@@ -60,7 +60,7 @@ test('custom blocks', async () => {
 })
 
 test('external blocks', async () => {
-  const require = jest.fn(v => v)
+  const require = jest.fn((v) => v)
   const component = await load('./fixtures/external', { sandbox: { require } })
 
   expect(component.template).toEqual('template')
@@ -91,7 +91,7 @@ test('hot reload', async () => {
 test('include file name', async () => {
   const component = await load('./fixtures/basic', { includeFileName: true })
 
-  expect(component.file).toMatch('/fixtures/basic')
+  expect(component.file).toMatch('basic')
 })
 
 test('server rendering', async () => {

@@ -1,5 +1,9 @@
-export default function Runtime(options) {
-  return component => {
+/**
+ * @param {Object} options
+ * @return {Function}
+ */
+export default function normalizeComponent(options) {
+  return (component) => {
     let scriptExports = {}
 
     if (component.script) {
@@ -37,7 +41,6 @@ export default function Runtime(options) {
     const module = { exports: scriptExports, options: scriptOptions }
 
     if (component.inlineStyles || component.cssModules) {
-
       module.hook = function() {
         if (component.inlineStyles) {
           options.injectStyles(component.inlineStyles, component.scopeId)
@@ -86,6 +89,10 @@ export default function Runtime(options) {
   }
 }
 
+/**
+ * @param {Function} factory
+ * @return {any}
+ */
 function load(factory) {
   const module = { exports: {} }
   factory(module, module.exports)

@@ -1,6 +1,6 @@
 import { load } from './utils'
 import { mount } from '@vue/test-utils'
-import createRuntime from '../src/Runtime'
+import normalizeComponent from '../src/component-normalizer'
 
 const injectStyles = () => {}
 
@@ -8,7 +8,7 @@ test('runtime', async () => {
   const injectStyles = jest.fn()
 
   const component = await load('./fixtures/basic')
-  const wrapper = mount(createRuntime({ injectStyles })(component))
+  const wrapper = mount(normalizeComponent({ injectStyles })(component))
 
   expect(wrapper.find('div').text()).toEqual('Lorem ipsum')
   expect(injectStyles).toHaveBeenCalledTimes(1)
@@ -16,14 +16,14 @@ test('runtime', async () => {
 
 test('with filename', async () => {
   const component = await load('./fixtures/basic', { includeFileName: true })
-  const exports = createRuntime({ injectStyles })(component)
+  const exports = normalizeComponent({ injectStyles })(component)
 
-  expect(exports.__file).toMatch('/fixtures/basic')
+  expect(exports.__file).toMatch('basic')
 })
 
 test('css modules / scope', async () => {
   const component = await load('./fixtures/styles')
-  const wrapper = mount(createRuntime({ injectStyles })(component))
+  const wrapper = mount(normalizeComponent({ injectStyles })(component))
 
   const attrs = wrapper.find('div').attributes()
   const cssModules = component.cssModules
@@ -36,14 +36,15 @@ test('functional component', async () => {
   const injectStyles = jest.fn()
 
   const component = await load('./fixtures/functional')
-  const wrapper = mount(createRuntime({ injectStyles })(component))
+
+  mount(normalizeComponent({ injectStyles })(component))
 
   expect(injectStyles).toHaveBeenCalledTimes(1)
 })
 
 test('custom-blocks', async () => {
   const component = await load('./fixtures/customblock')
-  const exports = createRuntime({ injectStyles })(component)
+  const exports = normalizeComponent({ injectStyles })(component)
 
   expect(exports.foo).toEqual('bar')
 })
