@@ -35,6 +35,8 @@ const DefaultOptions = {
 
   serverRendering: false,
 
+  hotReload: false,
+
   compilers: {},
 
   getCompiler: () => {},
@@ -51,10 +53,6 @@ const DefaultOptions = {
 export default async function Compile(filePath, content, options_ = {}) {
   const options = { ...DefaultOptions, ...options_ }
   const components = VueCompiler.parseComponent(content, { outputSourceRange: true })
-
-  if (components.errors && components.errors.length) {
-    return { errors: components.errors }
-  }
 
   const promises = [null, null, null]
 
@@ -146,16 +144,13 @@ async function generate(filePath, components, options) {
 
     for (const style of components.styles) {
       let node = style.node
-      let postcssPlugins = []
 
       if (style.attrs.src) {
         externalStyles.push(node)
         continue
       }
 
-      if (options.postcss) {
-        postcssPlugins = options.postcss.slice()
-      }
+      const postcssPlugins = options.postcss.slice()
 
       /**
        * Module style
@@ -232,7 +227,7 @@ async function generate(filePath, components, options) {
     }
 
     if (externalStyles.length || inlineStyles.length) {
-      rootNode.add('styles: [\n')
+      rootNode.add('inlineStyles: [\n')
       for (const externalNode of externalStyles) {
         rootNode.add(['(', externalNode, '\n),\n'])
       }
@@ -273,6 +268,14 @@ async function generate(filePath, components, options) {
     rootNode.add('],\n')
   }
 
+  if (options.serverRendering) {
+    rootNode.add('server: true,\n')
+  }
+
+  if (options.hotReload) {
+    rootNode.add('hotAPI: module.hot,\n')
+  }
+
   if (options.includeFileName) {
     rootNode.add(['file: ', JSON.stringify(filePath), ',\n'])
   }
@@ -298,7 +301,7 @@ async function generate(filePath, components, options) {
   result.scopeId = scopeId
 
   if (options.extractStyles) {
-    result.styles = extractedStyles
+    result.extractedStyles = extractedStyles
   }
 
   return result
@@ -366,15 +369,6 @@ function compileHtml(item, options) {
 
   item.warnings = item.warnings.concat(result.errors).concat(result.tips)
   item.node = new SourceNode(null, null, item.node.source, code)
-
-  for (const msg of item.warnings) {
-    if (msg.start != null) {
-      msg.start += item.start - item.line + 1
-    }
-    if (msg.end != null) {
-      msg.end += item.start - item.line + 1
-    }
-  }
 }
 
 /**
@@ -397,10 +391,6 @@ function setSourceInfo(item, filePath, content) {
   item.filePath = `${filePath}?${item.type}`
   if (item.index != null) {
     item.filePath += `_${item.index}`
-  }
-
-  if (!item.attrs) {
-    item.attrs = {}
   }
 
   if (item.attrs.src) {

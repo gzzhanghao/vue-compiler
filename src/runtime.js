@@ -34,12 +34,27 @@ export default function Runtime(options) {
       scriptOptions._scopeId = component.scopeId
     }
 
-    if (component.cssModules) {
+    const module = { exports: scriptExports, options: scriptOptions }
 
+    if (component.inlineStyles || component.cssModules) {
+
+      module.hook = function() {
+        if (component.inlineStyles) {
+          options.injectStyles(component.inlineStyles, component.scopeId)
+        }
+        if (component.cssModules) {
+          for (const name of Object.keys(component.cssModules)) {
+            this[name] = component.cssModules[name]
+          }
+        }
+      }
     }
 
-    if (component.styles) {
+    if (component.hotAPI && options.hookModule) {
+      options.hookModule(component, module)
+    }
 
+    if (module.hook) {
       if (scriptOptions.functional) {
         const originalRender = scriptOptions.render
         scriptOptions._injectStyles = hook
@@ -50,15 +65,7 @@ export default function Runtime(options) {
       } else {
         scriptOptions.beforeCreate = [].concat(scriptOptions.beforeCreate || [], hook)
       }
-
-      function hook() {
-        for (const style of component.styles) {
-          options.injectStyle(style, component.scopeId)
-        }
-      }
     }
-
-    const component = { exports: scriptExports, options: scriptOptions }
 
     if (component.customBlocks) {
       for (const factory of component.customBlocks || []) {
@@ -70,12 +77,12 @@ export default function Runtime(options) {
           block = block.default
         }
         if (typeof block === 'function') {
-          block(component)
+          block(module)
         }
       }
     }
 
-    return component.exports
+    return module.exports
   }
 }
 
@@ -84,18 +91,3 @@ function load(factory) {
   factory.call(null, module, module.exports)
   return module.exports
 }
-
-script: (module, exports),
-template: {
-  render: (),
-  staticRenderFns: [
-    (),
-  ],
-},
-functional: true,
-hasScopedStyles: true,
-styles: [],
-customBlocks: [
-  (module, exports),
-],
-scopeId: 'data-v-xxxx',

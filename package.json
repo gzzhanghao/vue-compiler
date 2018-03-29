@@ -6,7 +6,7 @@
     "watch": "babel src -d lib --watch",
     "build": "babel src -d lib",
     "postinstall": "npm run build",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
