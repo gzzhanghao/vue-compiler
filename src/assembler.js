@@ -1,10 +1,10 @@
 import postcss from 'postcss'
 import postcssModules from 'postcss-modules'
+import postcssScopeId from '@vue/component-compiler-utils/dist/stylePlugins/scoped'
 import postcssComposition from 'postcss-plugin-composition'
 import { SourceNode, SourceMapConsumer } from 'source-map'
 
 import { genId } from './utils'
-import postcssScopeId from './plugins/scope-id'
 
 /**
  * Generate source code from given components
@@ -100,7 +100,7 @@ export default async function assemble(filePath, components, options) {
 
       if (style.scoped) {
         hasScopedStyles = true
-        postcssPlugins.push(postcssScopeId({ id: scopeId }))
+        postcssPlugins.push(postcssScopeId(scopeId))
       }
 
       /**

@@ -11,6 +11,7 @@
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@vue/component-compiler-utils": "^1.0.0",
     "hash-sum": "^1.0.2",
     "postcss": "^6.0.21",
     "postcss-modules": "^1.1.0",
