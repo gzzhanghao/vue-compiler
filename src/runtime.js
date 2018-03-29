@@ -88,6 +88,6 @@ export default function Runtime(options) {
 
 function load(factory) {
   const module = { exports: {} }
-  factory.call(null, module, module.exports)
+  factory(module, module.exports)
   return module.exports
 }
