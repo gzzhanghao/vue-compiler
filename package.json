@@ -1,6 +1,6 @@
 {
   "name": "vue-compiler",
-  "version": "4.0.3-beta",
+  "version": "4.0.4-beta",
   "main": "lib",
   "scripts": {
     "build": "tsc",
