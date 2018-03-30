@@ -8,16 +8,12 @@ import { Dictionary } from './lib'
 export interface ParseOptions {
 
   parseOptions?: Object
-  // options passed to vue-template-compiler
 
   filename?: string
-  // source file name
 
   sourceMaps?: boolean
-  // enable sourcemap
 
   sourceRoot?: string
-  // sourcemap root
 }
 
 export interface SFCDescriptor {

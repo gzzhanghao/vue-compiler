@@ -3,7 +3,7 @@ import { Dictionary } from './lib'
 
 export interface ProcessOptions {
 
-    getCompiler?: Function
+  getCompiler?: Function
 
   compilers?: Dictionary<Function>
 }
