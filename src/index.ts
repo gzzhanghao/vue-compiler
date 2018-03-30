@@ -1,5 +1,4 @@
-// @ts-ignore
-import * as defaultsDeep from 'lodash.defaultsdeep'
+import defaultsDeep = require('lodash.defaultsdeep')
 
 import proc from './processor'
 import parse from './parser'
