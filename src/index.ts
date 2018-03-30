@@ -1,4 +1,4 @@
-import defaultsDeep from 'lodash.defaultsdeep'
+import * as defaultsDeep from 'lodash.defaultsdeep'
 
 import proc from './processor'
 import parse from './parser'
