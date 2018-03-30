@@ -8,7 +8,6 @@
     "moduleResolution": "node",
     "declaration": true,
     "allowJs": false,
-    "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "removeComments": false,

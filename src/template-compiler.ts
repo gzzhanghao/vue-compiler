@@ -1,11 +1,14 @@
-// @ts-ignore
-import transpile = require('vue-template-es2015-compiler')
-// @ts-ignore
-import * as VueCompiler from 'vue-template-compiler'
+import { SourceNode } from 'source-map'
+
+import {
+  CompileTemplateOptions,
+  SFCTemplateBlock,
+} from './types/template-compiler'
 
 import { SFCBlock } from './types/parser'
-import { SourceNode } from 'source-map/source-map'
-import { CompileTemplateOptions, SFCTemplateBlock } from './types/template-compiler'
+
+const transpile = require('vue-template-es2015-compiler')
+const VueCompiler = require('vue-template-compiler')
 
 export default function compileTemplate(item: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock {
   const block: SFCTemplateBlock = { ...item, functional: !!item.attrs.functional }

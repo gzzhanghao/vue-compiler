@@ -1,9 +1,10 @@
+import { SourceMapGenerator } from 'source-map'
+
 import { AssembleOptions, AssembleResult } from './assembler'
 import { CompileStyleOptions } from './style-compiler'
 import { CompileTemplateOptions } from './template-compiler'
 import { ParseOptions } from './parser'
 import { ProcessOptions } from './processor'
-import { SourceMapGenerator } from 'source-map/source-map'
 
 export interface CompileOptions {
 

@@ -1,5 +1,6 @@
-import { load } from './utils'
 import { mount } from '@vue/test-utils'
+
+import { load } from './utils'
 import normalizer from '../src/normalizer'
 
 const injectStyles = () => {}

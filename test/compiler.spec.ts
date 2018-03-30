@@ -1,4 +1,8 @@
-import { compile, load, evaluate } from './utils'
+import {
+  compile,
+  load,
+  evaluate,
+} from './utils'
 
 test('basic compiler', async () => {
   const component = await compile('./fixtures/basic', { sourceMaps: true })
@@ -8,7 +12,7 @@ test('basic compiler', async () => {
   expect(component).toHaveProperty('scopeId')
 
   expect(component.tips).toBeFalsy()
-  expect(component.erros).toBeFalsy()
+  expect(component.errors).toBeFalsy()
   expect(component.functional).toBeFalsy()
 })
 
@@ -97,7 +101,7 @@ test('functional component', async () => {
 })
 
 test('hot reload', async () => {
-  const component = await load('./fixtures/basic', { assembleOptions: { hotReload: true } })
+  const component = await load('./fixtures/basic', { assembleOptions: { hotAPI: 'module.hot' } })
 
   expect(component.hotAPI).toEqual('hotAPI')
 })

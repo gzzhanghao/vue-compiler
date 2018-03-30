@@ -1,30 +1,15 @@
-// @ts-ignore
-import { parseComponent } from 'vue-template-compiler'
 import { SourceNode } from 'source-map'
 
-import { ParseOptions, SFCDescriptor, SFCBlock, VueSFCBlock } from './types/parser'
+import {
+  ParseOptions,
+  SFCDescriptor,
+  SFCBlock,
+  VueSFCBlock,
+  VueSFCDescriptor,
+  SFCBlockOptions,
+} from './types/parser'
 
-interface VueSFCDescriptor {
-
-  script?: VueSFCBlock
-
-  template?: VueSFCBlock
-
-  styles: VueSFCBlock[]
-
-  customBlocks: VueSFCBlock[]
-}
-
-interface SFCBlockOptions {
-
-  filename: string
-
-  source: string
-
-  sourceMaps?: boolean
-
-  sourceRoot?: string
-}
+const { parseComponent } = require('vue-template-compiler')
 
 const LINE_SPLITTER = /\r?\n/g
 

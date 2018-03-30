@@ -1,5 +1,5 @@
-import { RawSourceMap } from "source-map/source-map"
-import { SFCBlock } from "./parser"
+import { RawSourceMap } from 'source-map'
+import { SFCBlock } from './parser'
 
 export interface CompileTemplateOptions {
 

@@ -10,7 +10,11 @@ import * as defaultOptions from './default-options'
 import { genId } from './utils'
 
 import { SFCDescriptor } from './types/parser'
-import { CompileOptions, CompileResult } from './types/compiler'
+
+import {
+  CompileOptions,
+  CompileResult,
+} from './types/compiler'
 
 export default async function compile(content: string, options: CompileOptions = {}): Promise<CompileResult> {
   options = defaultsDeep({}, options, defaultOptions[options.mode || 'production'], {

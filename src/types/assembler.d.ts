@@ -1,5 +1,6 @@
+import { SourceNode, SourceMapGenerator } from 'source-map'
+
 import { SFCBlock } from './parser'
-import { SourceNode, SourceMapGenerator } from 'source-map/source-map'
 import { SFCStyleBlock } from './style-compiler'
 import { SFCTemplateBlock } from './template-compiler'
 
@@ -20,7 +21,9 @@ export interface AssembleOptions {
 
   scopeId?: string
 
-  normalizer?: SourceNode|string
+  prefix?: SourceNode|string
+
+  postfix?: SourceNode|string
 
   extractStyles?: boolean
 
@@ -32,7 +35,7 @@ export interface AssembleOptions {
 
   ssrOptimize?: boolean
 
-  hotReload?: boolean
+  hotAPI?: string
 
   includeFileName?: boolean
 }

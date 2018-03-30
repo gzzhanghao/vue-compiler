@@ -1,17 +1,24 @@
-import postcss = require('postcss')
 import postcssScopeId from '@vue/component-compiler-utils/dist/stylePlugins/scoped'
 import { ProcessOptions } from 'postcss'
-import { SourceNode, SourceMapConsumer, RawIndexMap } from 'source-map/source-map'
 
-// @ts-ignore
-import postcssModules from 'postcss-modules'
+import {
+  SourceNode,
+  SourceMapConsumer,
+  RawIndexMap,
+} from 'source-map'
 
-// @ts-ignore
-import postcssComposition from 'postcss-plugin-composition'
+import postcss = require('postcss')
 
 import { SFCBlock } from './types/parser'
 import { Dictionary } from './types/lib'
-import { CompileStyleOptions, SFCStyleBlock } from './types/style-compiler'
+
+import {
+  CompileStyleOptions,
+  SFCStyleBlock,
+} from './types/style-compiler'
+
+const postcssModules = require('postcss-modules')
+const postcssComposition = require('postcss-plugin-composition')
 
 export default async function compileStyle(item: SFCBlock, options: CompileStyleOptions): Promise<SFCStyleBlock> {
   const block: SFCStyleBlock = { ...item, scoped: !!item.attrs.scoped }

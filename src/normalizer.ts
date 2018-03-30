@@ -1,4 +1,8 @@
-import { NormalizerRuntime, VueComponentDescriptor, ComponentModuleDescriptor } from './types/runtime'
+import {
+  NormalizerRuntime,
+  VueComponentDescriptor,
+  ComponentModuleDescriptor,
+} from './types/runtime'
 
 export default function normalizeComponent(runtime: NormalizerRuntime) {
   return (component: VueComponentDescriptor) => {

@@ -1,4 +1,5 @@
 import defaultsDeep = require('lodash.defaultsdeep')
+
 import { CompileOptions } from './types/compiler'
 
 export const base: CompileOptions = {
@@ -13,7 +14,7 @@ export const base: CompileOptions = {
   },
 
   assembleOptions: {
-    normalizer: 'function(v) { return v }',
+    prefix: 'module.exports = require("vue-compiler/lib/normalizer")({})',
   },
 }
 

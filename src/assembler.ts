@@ -1,28 +1,33 @@
-import { SourceNode, SourceMapGenerator } from 'source-map/source-map'
+import {
+  SourceNode,
+  SourceMapGenerator,
+} from 'source-map'
 
 import { Dictionary } from './types/lib'
-import { AssembleInput, AssembleOptions, AssembleResult } from './types/assembler'
 
-interface ExtractedStyle {
-
-  code: string
-
-  map?: SourceMapGenerator
-}
+import {
+  AssembleInput,
+  AssembleOptions,
+  AssembleResult,
+} from './types/assembler'
 
 export default function assemble(components: AssembleInput, options: AssembleOptions): AssembleResult {
   const sourceMapOptions = { file: options.filename, sourceRoot: options.sourceRoot }
 
-  const extractedStyles: Array<ExtractedStyle> = []
-  let hasScopedStyles: boolean = false
-
   const rootNode: Array<string|SourceNode> = []
+  const extractedStyles: Array<{ code: string, map?: SourceMapGenerator }> = []
+
+  let hasScopedStyles: boolean = false
 
   /**
    * Process components.script
    */
 
-  rootNode.push('module.exports = (', options.normalizer, ')({\n')
+  if (options.prefix) {
+    rootNode.push(options.prefix)
+  }
+
+  rootNode.push('({\n')
 
   if (components.script) {
     rootNode.push('script: function(module, exports) {\n')
@@ -139,8 +144,8 @@ export default function assemble(components: AssembleInput, options: AssembleOpt
     rootNode.push('server: true,\n')
   }
 
-  if (options.hotReload) {
-    rootNode.push('hotAPI: module.hot,\n')
+  if (options.hotAPI) {
+    rootNode.push('hotAPI: ', options.hotAPI, ',\n')
   }
 
   if (options.includeFileName) {
@@ -149,8 +154,12 @@ export default function assemble(components: AssembleInput, options: AssembleOpt
 
   rootNode.push(
     'scopeId: ', JSON.stringify(options.scopeId), ',\n',
-    '})\n',
+    '})',
   )
+
+  if (options.postfix) {
+    rootNode.push(options.postfix)
+  }
 
   /**
    * Return result
