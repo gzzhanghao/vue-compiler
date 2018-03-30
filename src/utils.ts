@@ -1,5 +1,5 @@
 // @ts-ignore
-import hashsum from 'hash-sum'
+import hashsum = require('hash-sum')
 
 const idCache = Object.create(null)
 

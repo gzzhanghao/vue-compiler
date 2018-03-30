@@ -55,11 +55,13 @@ export default async function compile(content: string, options: CompileOptions =
     ...options.assembleOptions,
   })
 
-  return {
-    ...assembleResult,
-    scopeId: options.scopeId,
-    tips: template.tips,
-    errors: template.errors,
-    functional: !!template.functional,
+  const result: CompileResult = { ...assembleResult, scopeId: options.scopeId }
+
+  if (template) {
+    result.tips = template.tips
+    result.errors = template.errors
+    result.functional = !!template.functional
   }
+
+  return result
 }

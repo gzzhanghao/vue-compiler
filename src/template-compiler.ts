@@ -1,5 +1,5 @@
 // @ts-ignore
-import transpile from 'vue-template-es2015-compiler'
+import transpile = require('vue-template-es2015-compiler')
 // @ts-ignore
 import * as VueCompiler from 'vue-template-compiler'
 

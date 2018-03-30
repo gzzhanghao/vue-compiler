@@ -77,7 +77,7 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
   block.sourceNode.setSourceContent(options.filename, options.source)
 
   vueBlock.content.split(LINE_SPLITTER).forEach((line, index) => {
-    block.sourceNode.add(new SourceNode(startLine + index + 1, 0, options.filename, line))
+    block.sourceNode.add(new SourceNode(startLine + index + 1, 0, options.filename, [line, '\n']))
   })
 
   return block

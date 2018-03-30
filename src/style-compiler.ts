@@ -1,6 +1,7 @@
-import postcss, { ProcessOptions } from 'postcss'
-import { SourceNode, SourceMapConsumer, RawIndexMap } from 'source-map/source-map'
+import postcss = require('postcss')
 import postcssScopeId from '@vue/component-compiler-utils/dist/stylePlugins/scoped'
+import { ProcessOptions } from 'postcss'
+import { SourceNode, SourceMapConsumer, RawIndexMap } from 'source-map/source-map'
 
 // @ts-ignore
 import postcssModules from 'postcss-modules'
