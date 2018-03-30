@@ -62,7 +62,12 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
   }
 
   vueBlock.content.split(LINE_SPLITTER).forEach((line, index) => {
-    block.sourceNode.add(new SourceNode(startLine + index + 1, 0, options.filename, [line, '\n']))
+    block.sourceNode.add(new SourceNode(
+      startLine + index + 1,
+      index ? 0 : block.loc.start.column,
+      options.filename,
+      [line, '\n']
+    ))
   })
 
   return block
