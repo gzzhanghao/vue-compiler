@@ -3,12 +3,12 @@ import vm = require('vm')
 import path = require('path')
 import defaultsDeep = require('lodash.defaultsdeep')
 
-import { promisify } from 'es6-promisify'
+const { promisify } = require('es6-promisify')
 
 import compiler from '../src'
 import { CompileOptions, CompileResult } from '../src/types/compiler'
 
-interface LoadOptions extends CompileOptions {
+export interface LoadOptions extends CompileOptions {
 
   sandbox?: Object
 }

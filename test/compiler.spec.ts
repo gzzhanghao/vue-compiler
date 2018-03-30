@@ -78,7 +78,7 @@ test('custom blocks', async () => {
 })
 
 test('external blocks', async () => {
-  const require = (v) => v
+  const require = (v: string): any => v
   const component = await load('./fixtures/external', { sandbox: { require } })
 
   expect(component.template).toEqual('template')
