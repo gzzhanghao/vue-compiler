@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as defaultsDeep from 'lodash.defaultsdeep'
 
 import proc from './processor'

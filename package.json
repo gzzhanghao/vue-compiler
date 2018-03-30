@@ -4,7 +4,8 @@
   "main": "lib",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "npm run build"
   },
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
@@ -15,13 +16,11 @@
     "postcss": "^6.0.21",
     "postcss-modules": "^1.1.0",
     "postcss-plugin-composition": "^0.1.1",
-    "postcss-selector-parser": "^3.1.1",
     "source-map": "^0.7.2",
     "vue-template-compiler": "^2.5.16",
     "vue-template-es2015-compiler": "^1.6.0"
   },
   "devDependencies": {
-    "@types/lodash.defaultsdeep": "^4.6.3",
     "@types/node": "^9.6.1",
     "@vue/test-utils": "^1.0.0-beta.13",
     "babel-cli": "^6.18.0",
