@@ -1,3 +1,4 @@
+// @ts-ignore
 import hashsum from 'hash-sum'
 
 const idCache = Object.create(null)
@@ -7,7 +8,7 @@ const idCache = Object.create(null)
  * @param {string} content
  * @return {string} Hash sum for the file path
  */
-export function genId(content) {
+export function genId(content: string) {
   if (!idCache[content]) {
     idCache[content] = `data-v-${hashsum(content)}`
   }

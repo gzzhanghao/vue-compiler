@@ -1,12 +1,7 @@
 module.exports = {
 
-  parser: 'babel-eslint',
-
   extends: [
+    'plugin:vue/recommended',
     '../.eslintrc.js',
   ],
-
-  env: {
-    jest: true,
-  },
 }

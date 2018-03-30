@@ -1,10 +1,8 @@
-/**
- * @param {Object} options
- * @return {Function}
- */
-export default function normalizeComponent(options) {
-  return (component) => {
-    let scriptExports = {}
+import { NormalizerRuntime, VueComponentDescriptor, ComponentModuleDescriptor } from './types/runtime'
+
+export default function normalizeComponent(runtime: NormalizerRuntime) {
+  return (component: VueComponentDescriptor) => {
+    let scriptExports: any = {}
 
     if (component.script) {
       scriptExports = load(component.script)
@@ -38,12 +36,12 @@ export default function normalizeComponent(options) {
       scriptOptions._scopeId = component.scopeId
     }
 
-    const module = { exports: scriptExports, options: scriptOptions }
+    const module: ComponentModuleDescriptor = { exports: scriptExports, options: scriptOptions }
 
     if (component.inlineStyles || component.cssModules) {
       module.hook = function() {
         if (component.inlineStyles) {
-          options.injectStyles(component.inlineStyles, component.scopeId)
+          runtime.injectStyles(component.inlineStyles, component.scopeId)
         }
         if (component.cssModules) {
           for (const name of Object.keys(component.cssModules)) {
@@ -53,15 +51,15 @@ export default function normalizeComponent(options) {
       }
     }
 
-    if (component.hotAPI && options.hookModule) {
-      options.hookModule(component, module)
+    if (component.hotAPI && runtime.hookModule) {
+      runtime.hookModule(component, module)
     }
 
     if (module.hook) {
       if (scriptOptions.functional) {
         const originalRender = scriptOptions.render
         scriptOptions._injectStyles = module.hook
-        scriptOptions.render = function renderWithStyleInjection(h, context) {
+        scriptOptions.render = function renderWithStyleInjection(h: any, context: any) {
           module.hook.call(context)
           return originalRender(h, context)
         }
@@ -89,11 +87,7 @@ export default function normalizeComponent(options) {
   }
 }
 
-/**
- * @param {Function} factory
- * @return {any}
- */
-function load(factory) {
+function load(factory: Function): any {
   const module = { exports: {} }
   factory(module, module.exports)
   return module.exports

@@ -3,25 +3,26 @@
   "version": "4.0.1-beta",
   "main": "lib",
   "scripts": {
-    "watch": "babel src -d lib --watch",
-    "build": "babel src -d lib",
-    "postinstall": "npm run build",
-    "test": "jest --coverage"
+    "build": "tsc",
+    "test": "jest"
   },
   "author": "Jason <jason.daurus@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "@vue/component-compiler-utils": "^1.0.0",
     "hash-sum": "^1.0.2",
+    "lodash.defaultsdeep": "^4.6.0",
     "postcss": "^6.0.21",
     "postcss-modules": "^1.1.0",
     "postcss-plugin-composition": "^0.1.1",
-    "postcss-selector-parser": "^2.2.2",
-    "source-map": "^0.5.6",
+    "postcss-selector-parser": "^3.1.1",
+    "source-map": "^0.7.2",
     "vue-template-compiler": "^2.5.16",
     "vue-template-es2015-compiler": "^1.6.0"
   },
   "devDependencies": {
+    "@types/lodash.defaultsdeep": "^4.6.3",
+    "@types/node": "^9.6.1",
     "@vue/test-utils": "^1.0.0-beta.13",
     "babel-cli": "^6.18.0",
     "babel-eslint": "^8.2.2",
@@ -32,6 +33,9 @@
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
     "jest": "^22.4.3",
+    "ts-jest": "^22.4.2",
+    "typescript": "^2.8.1",
+    "typescript-eslint-parser": "^14.0.0",
     "vue": "^2.5.16"
   },
   "repository": {

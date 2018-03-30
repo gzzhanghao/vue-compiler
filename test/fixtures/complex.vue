@@ -1,0 +1,18 @@
+<template>
+  <div>
+    <div>
+      <div>
+        <div>foo</div>
+      </div>
+      <div>
+        <div>bar</div>
+      </div>
+      <div>
+        <div>baz</div>
+      </div>
+      <div>
+        <div>biz</div>
+      </div>
+    </div>
+  </div>
+</template>

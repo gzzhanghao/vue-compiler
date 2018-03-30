@@ -8,34 +8,34 @@ import compiler from '../src'
 const readFile = promisify(fs.readFile)
 
 /**
- * @param {string} filename
+ * @param {string} filePath
  * @param {Object} options
  * @return {BuildResult}
  */
-export async function compile(filename, options) {
-  let filePath = path.resolve(__dirname, filename)
+export async function compile(filePath, options) {
+  let filename = path.resolve(__dirname, filePath)
 
-  if (!filePath.endsWith('.vue')) {
-    filePath += '.vue'
+  if (!filename.endsWith('.vue')) {
+    filename += '.vue'
   }
 
-  const code = await readFile(filePath, 'utf-8')
+  const code = await readFile(filename, 'utf-8')
 
-  return compiler(filePath, code, options)
+  return compiler(code, { ...options, filename })
 }
 
 /**
- * @param {string} filename
+ * @param {string} filePath
  * @param {Object} options
  * @return {VueComponent}
  */
-export async function load(filename, options = {}) {
-  const res = await compile(filename, { ...options, normalizer: 'v => v' })
+export async function load(filePath, options = {}) {
+  const res = await compile(filePath, { ...options, normalizer: 'v => v' })
   if (res.errors) {
     throw new Error(`Compile error: ${res.errors.join('\n')}`)
   }
   const mod = { exports: {}, hot: 'hotAPI' }
-  vm.runInNewContext(res.code, { module: mod, exports: mod.exports, ...options.sandbox }, { filename })
+  vm.runInNewContext(res.code, { module: mod, exports: mod.exports, ...options.sandbox }, { filename: filePath })
   return mod.exports
 }
 

@@ -1,23 +1,37 @@
 import { compile, load, evaluate } from './utils'
 
 test('basic compiler', async () => {
-  const component = await compile('./fixtures/basic', { sourceMap: true })
+  const component = await compile('./fixtures/basic', { sourceMaps: true })
 
   expect(component).toHaveProperty('code')
   expect(component).toHaveProperty('map')
   expect(component).toHaveProperty('scopeId')
-  expect(component.warnings).toHaveLength(0)
+
+  expect(component.tips).toBeFalsy()
+  expect(component.erros).toBeFalsy()
+  expect(component.functional).toBeFalsy()
 })
 
-test('report warnings', async () => {
+test('report errors', async () => {
   const component = await compile('./fixtures/invalid')
 
-  expect(component.warnings).toHaveLength(1)
-  expect(component.warnings[0]).toEqual('duplicate attribute: @click')
+  expect(component.errors).toHaveLength(1)
+})
+
+test('report tips', async () => {
+  const component = await compile('./fixtures/tips')
+
+  expect(component.tips).toHaveLength(1)
+})
+
+test('complex template', async () => {
+  const component = await load('./fixtures/complex')
+
+  expect(component.template.staticRenderFns).toHaveLength(1)
 })
 
 test('extract styles', async () => {
-  const component = await compile('./fixtures/styles', { extractStyles: true })
+  const component = await compile('./fixtures/styles', { assembleOptions: { extractStyles: true } })
   const styles = component.extractedStyles
 
   expect(styles).toHaveLength(3)
@@ -41,13 +55,13 @@ test('css modules / scope', async () => {
 })
 
 test('style sourcemaps', async () => {
-  const component = await load('./fixtures/styles', { styleSourceMap: true })
+  const component = await load('./fixtures/styles', { sourceMaps: true })
 
   expect(component.inlineStyles[0]).toMatch('sourceMappingURL')
 })
 
 test('extract style sourcemaps', async () => {
-  const component = await compile('./fixtures/styles', { extractStyles: true, styleSourceMap: true })
+  const component = await compile('./fixtures/styles', { sourceMaps: true, assembleOptions: { extractStyles: true } })
 
   expect(component.extractedStyles[0]).toHaveProperty('map')
 })
@@ -60,7 +74,7 @@ test('custom blocks', async () => {
 })
 
 test('external blocks', async () => {
-  const require = jest.fn((v) => v)
+  const require = (v) => v
   const component = await load('./fixtures/external', { sandbox: { require } })
 
   expect(component.template).toEqual('template')
@@ -83,19 +97,19 @@ test('functional component', async () => {
 })
 
 test('hot reload', async () => {
-  const component = await load('./fixtures/basic', { hotReload: true })
+  const component = await load('./fixtures/basic', { assembleOptions: { hotReload: true } })
 
   expect(component.hotAPI).toEqual('hotAPI')
 })
 
 test('include file name', async () => {
-  const component = await load('./fixtures/basic', { includeFileName: true })
+  const component = await load('./fixtures/basic', { assembleOptions: { includeFileName: true } })
 
   expect(component.file).toMatch('basic')
 })
 
 test('server rendering', async () => {
-  const component = await load('./fixtures/basic', { serverRendering: true })
+  const component = await load('./fixtures/basic', { ssrOptimize: true })
 
   expect(component.server).toBeTruthy()
 })
