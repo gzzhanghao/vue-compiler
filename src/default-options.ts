@@ -1,4 +1,4 @@
-import defaultsDeep from 'lodash.defaultsdeep'
+import defaultsDeep = require('lodash.defaultsdeep')
 import { CompileOptions } from './types/compiler'
 
 export const base: CompileOptions = {
