@@ -49,6 +49,8 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
 
   const startLine = block.loc.start.line
 
+  block.sourceNode.setSourceContent(options.filename, options.source)
+
   if (block.src) {
     block.sourceNode.add(new SourceNode(startLine + 1, 0, options.filename, `require(${JSON.stringify(block.src)})`))
     return block
@@ -58,8 +60,6 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
     block.sourceNode.add(vueBlock.content)
     return block
   }
-
-  block.sourceNode.setSourceContent(options.filename, options.source)
 
   vueBlock.content.split(LINE_SPLITTER).forEach((line, index) => {
     block.sourceNode.add(new SourceNode(startLine + index + 1, 0, options.filename, [line, '\n']))
