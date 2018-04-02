@@ -8,7 +8,6 @@
     "prepublishOnly": "npm run build"
   },
   "author": "Jason <jason.daurus@gmail.com>",
-  "license": "MIT",
   "dependencies": {
     "@vue/component-compiler-utils": "^1.0.0",
     "hash-sum": "^1.0.2",

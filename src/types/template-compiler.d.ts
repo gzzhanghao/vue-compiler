@@ -12,9 +12,9 @@ export interface CompileTemplateOptions {
 
 export interface SFCTemplateBlock extends SFCBlock {
 
+  errors?: Array<any>
+
+  tips?: Array<any>
+
   functional: boolean
-
-  tips?: Array<string>
-
-  errors?: Array<string>
 }

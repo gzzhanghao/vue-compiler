@@ -1,11 +1,11 @@
 import {
   NormalizerRuntime,
-  VueComponentDescriptor,
+  ComponentDescriptor,
   ComponentModuleDescriptor,
-} from './types/runtime'
+} from './types/normalizer'
 
-export default function normalizeComponent(runtime: NormalizerRuntime) {
-  return (component: VueComponentDescriptor) => {
+export default function normalizeComponent(runtime: NormalizerRuntime): (component: ComponentDescriptor) => any {
+  return (component: ComponentDescriptor) => {
     let scriptExports: any = {}
 
     if (component.script) {

@@ -1,15 +1,17 @@
 import { Dictionary } from './lib'
 
+export type ModuleDefinition = (module: { exports: Object }, exports: Object) => void
+
 export interface NormalizerRuntime {
 
   injectStyles: (styles: Array<string>, scopeId: string) => void
 
-  hookModule?: (component: VueComponentDescriptor, module: ComponentModuleDescriptor) => void
+  hookModule?: (component: ComponentDescriptor, module: ComponentModuleDescriptor) => void
 }
 
-export interface VueComponentDescriptor {
+export interface ComponentDescriptor {
 
-  script?: Function
+  script?: ModuleDefinition
 
   template?: { render: string, staticRenderFns: Array<string> }
 
@@ -27,12 +29,12 @@ export interface VueComponentDescriptor {
 
   hotAPI?: any
 
-  customBlocks?: Array<Function>
+  customBlocks?: Array<ModuleDefinition>
 }
 
 export interface ComponentModuleDescriptor {
 
-  hook?: Function
+  hook?: (component: ComponentDescriptor, module: ComponentModuleDescriptor) => void
 
   exports: any
 

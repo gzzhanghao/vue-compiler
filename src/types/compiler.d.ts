@@ -33,11 +33,11 @@ export interface CompileOptions {
 
 export interface CompileResult extends AssembleResult {
 
-  tips?: Array<string>
-
   errors?: Array<string>
 
-  scopeId?: string
+  tips?: Array<string>
+
+  scopeId: string
 
   functional?: boolean
 }
