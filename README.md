@@ -228,6 +228,7 @@ interface CompileStyleOptions {
   sourceRoot?: string // default: CompileOptions.sourceRoot
   // source root for the sourcemap
 }
+
 interface SFCStyleBlock extends SFCBlock {
 
   scoped: boolean
