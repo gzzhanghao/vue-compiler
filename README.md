@@ -14,7 +14,7 @@ const { code, map } = await compile(source)
 
 ## Table of Contents
 
-- [API]()
+- [API](#api)
   - [compile(source: string, options: CompileOptions): CompileResult](#compilesource-string-options-compileoptions-compileresult)
   - [parse(source: string, options: ParseOptions): SFCDescriptor](#parsesource-string-options-parseoptions-sfcdescriptor)
   - [compileTemplate(block: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock](#compiletemplateblock-sfcblock-options-compiletemplateoptions-sfctemplateblock)
