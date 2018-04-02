@@ -1,9 +1,9 @@
+import { RawSourceMap } from 'source-map'
 import { Dictionary } from './lib'
-import { RawSourceMap } from 'source-map/source-map'
 
 export interface ProcessOptions {
 
-    getCompiler?: Function
+  getCompiler?: Function
 
   compilers?: Dictionary<Function>
 }

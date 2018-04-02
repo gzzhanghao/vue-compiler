@@ -1,10 +1,10 @@
-import { Dictionary } from "./lib"
+import { Dictionary } from './lib'
 
 export interface NormalizerRuntime {
 
   injectStyles: (styles: Array<string>, scopeId: string) => void
 
-  hookModule: (component: VueComponentDescriptor, module: ComponentModuleDescriptor) => void
+  hookModule?: (component: VueComponentDescriptor, module: ComponentModuleDescriptor) => void
 }
 
 export interface VueComponentDescriptor {

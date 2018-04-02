@@ -1,30 +1,15 @@
-// @ts-ignore
-import { parseComponent } from 'vue-template-compiler'
 import { SourceNode } from 'source-map'
 
-import { ParseOptions, SFCDescriptor, SFCBlock, VueSFCBlock } from './types/parser'
+import {
+  ParseOptions,
+  SFCDescriptor,
+  SFCBlock,
+  VueSFCBlock,
+  VueSFCDescriptor,
+  SFCBlockOptions,
+} from './types/parser'
 
-interface VueSFCDescriptor {
-
-  script?: VueSFCBlock
-
-  template?: VueSFCBlock
-
-  styles: VueSFCBlock[]
-
-  customBlocks: VueSFCBlock[]
-}
-
-interface SFCBlockOptions {
-
-  filename: string
-
-  source: string
-
-  sourceMaps?: boolean
-
-  sourceRoot?: string
-}
+const { parseComponent } = require('vue-template-compiler')
 
 const LINE_SPLITTER = /\r?\n/g
 
@@ -64,6 +49,8 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
 
   const startLine = block.loc.start.line
 
+  block.sourceNode.setSourceContent(options.filename, options.source)
+
   if (block.src) {
     block.sourceNode.add(new SourceNode(startLine + 1, 0, options.filename, `require(${JSON.stringify(block.src)})`))
     return block
@@ -74,10 +61,13 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
     return block
   }
 
-  block.sourceNode.setSourceContent(options.filename, options.source)
-
   vueBlock.content.split(LINE_SPLITTER).forEach((line, index) => {
-    block.sourceNode.add(new SourceNode(startLine + index + 1, 0, options.filename, [line, '\n']))
+    block.sourceNode.add(new SourceNode(
+      startLine + index + 1,
+      index ? 0 : block.loc.start.column,
+      options.filename,
+      [line, '\n']
+    ))
   })
 
   return block

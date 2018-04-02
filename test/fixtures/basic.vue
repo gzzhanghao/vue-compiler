@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span>Lorem {{ foo }}</span>
+    <span>Lorem {{foo}}</span>
   </div>
 </template>
 

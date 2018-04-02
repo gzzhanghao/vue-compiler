@@ -1,4 +1,8 @@
-import { compile, load, evaluate } from './utils'
+import {
+  compile,
+  load,
+  evaluate,
+} from './utils'
 
 test('basic compiler', async () => {
   const component = await compile('./fixtures/basic', { sourceMaps: true })
@@ -8,7 +12,7 @@ test('basic compiler', async () => {
   expect(component).toHaveProperty('scopeId')
 
   expect(component.tips).toBeFalsy()
-  expect(component.erros).toBeFalsy()
+  expect(component.errors).toBeFalsy()
   expect(component.functional).toBeFalsy()
 })
 
@@ -74,7 +78,7 @@ test('custom blocks', async () => {
 })
 
 test('external blocks', async () => {
-  const require = (v) => v
+  const require = (v: string): any => v
   const component = await load('./fixtures/external', { sandbox: { require } })
 
   expect(component.template).toEqual('template')
@@ -97,7 +101,7 @@ test('functional component', async () => {
 })
 
 test('hot reload', async () => {
-  const component = await load('./fixtures/basic', { assembleOptions: { hotReload: true } })
+  const component = await load('./fixtures/basic', { assembleOptions: { hotAPI: 'module.hot' } })
 
   expect(component.hotAPI).toEqual('hotAPI')
 })

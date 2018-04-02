@@ -1,14 +1,10 @@
-// @ts-ignore
-import hashsum = require('hash-sum')
+import { Dictionary } from './types/lib'
 
-const idCache = Object.create(null)
+const hashsum = require('hash-sum')
 
-/**
- * Generate unique id for specific file
- * @param {string} content
- * @return {string} Hash sum for the file path
- */
-export function genId(content: string) {
+const idCache: Dictionary = Object.create(null)
+
+export function genId(content: string): string {
   if (!idCache[content]) {
     idCache[content] = `data-v-${hashsum(content)}`
   }

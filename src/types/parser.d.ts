@@ -1,19 +1,19 @@
+import {
+  RawSourceMap,
+  SourceNode,
+} from 'source-map'
+
 import { Dictionary } from './lib'
-import { RawSourceMap, SourceNode } from 'source-map/source-map'
 
 export interface ParseOptions {
 
   parseOptions?: Object
-  // options passed to vue-template-compiler
 
   filename?: string
-  // source file name
 
   sourceMaps?: boolean
-  // enable sourcemap
 
   sourceRoot?: string
-  // sourcemap root
 }
 
 export interface SFCDescriptor {
@@ -76,4 +76,26 @@ export interface VueSFCBlock {
 
   end: number
   // ending index
+}
+
+export interface VueSFCDescriptor {
+
+  script?: VueSFCBlock
+
+  template?: VueSFCBlock
+
+  styles: VueSFCBlock[]
+
+  customBlocks: VueSFCBlock[]
+}
+
+export interface SFCBlockOptions {
+
+  filename: string
+
+  source: string
+
+  sourceMaps?: boolean
+
+  sourceRoot?: string
 }
