@@ -38,13 +38,5 @@
     "typescript-eslint-parser": "^14.0.0",
     "vue": "^2.5.16"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gzzhanghao/vue-compiler.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gzzhanghao/vue-compiler/issues"
-  },
-  "homepage": "https://github.com/gzzhanghao/vue-compiler#readme",
   "description": "A standalone vue component compiler"
 }
