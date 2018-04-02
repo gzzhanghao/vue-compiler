@@ -2,9 +2,7 @@
 
 For those who can't use webpack in their project.
 
-[TOC]
-
-## Usage
+## Basic Usage
 
 ```javascript
 import compile from 'vue-compiler'
@@ -13,6 +11,16 @@ const { code, map } = await compile(source)
 
 // :tada:
 ```
+
+## Table of Contents
+
+- [API]()
+  - [compile(source: string, options: CompileOptions): CompileResult](#compilesource-string-options-compileoptions-compileresult)
+  - [parse(source: string, options: ParseOptions): SFCDescriptor](#parsesource-string-options-parseoptions-sfcdescriptor)
+  - [compileTemplate(block: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock](#compiletemplateblock-sfcblock-options-compiletemplateoptions-sfctemplateblock)
+  - [compileStyle(block: SFCBlock, options: CompileStyleOptions): Promise](#compilestyleblock-sfcblock-options-compilestyleoptions-promisesfcstyleblock)
+  - [assemble(components: AssembleInput, options: AssembleOptions): AssembleResult](#assemblecomponents-assembleinput-options-assembleoptions-assembleresult)
+  - [normalize(runtime: NormalizerRuntime): (component: ComponentDescriptor) => any](#normalizeruntime-normalizerruntime-component-componentdescriptor--any)
 
 ## API
 
@@ -85,6 +93,9 @@ interface ProcessOptions {
   // compilers for specific blocks and langs
 }
 
+type CustomCompiler = (block: SFCBlock) => SFCBlock|void
+// custom compiler that replaces block's properties or
+// returns a new block to replace the origin block
 ```
 
 ### parse(source: string, options: ParseOptions): SFCDescriptor
@@ -340,10 +351,6 @@ type ModuleDefinition = (module: { exports: Object }, exports: Object) => void
 ### normalize(runtime: NormalizerRuntime): (component: ComponentDescriptor) => any
 
 ```typescript
-type CustomCompiler = (block: SFCBlock) => SFCBlock|void
-// custom compiler that replaces block's properties or
-// returns a new block to replace the origin block
-
 interface NormalizerRuntime {
 
   injectStyles: (styles: Array<string>, scopeId: string) => void
