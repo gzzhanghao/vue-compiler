@@ -24,7 +24,7 @@ export async function compile(filePath: string, options: CompileOptions = {}): P
 
   const code = await readFile(filename, 'utf-8')
 
-  return compiler(code, { ...options, filename })
+  return compiler(code, options)
 }
 
 export async function load(filename: string, options: LoadOptions = {}): Promise<any> {

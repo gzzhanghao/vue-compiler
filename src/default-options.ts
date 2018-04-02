@@ -4,6 +4,8 @@ import { CompileOptions } from './types/compiler'
 
 export const base: CompileOptions = {
 
+  filename: '<anoymous>',
+
   processOptions: {
     getCompiler: () => {},
     compilers: {},

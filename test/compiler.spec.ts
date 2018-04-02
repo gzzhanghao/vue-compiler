@@ -107,9 +107,9 @@ test('hot reload', async () => {
 })
 
 test('include file name', async () => {
-  const component = await load('./fixtures/basic', { assembleOptions: { includeFileName: true } })
+  const component = await load('./fixtures/basic', { filename: 'basic', assembleOptions: { includeFileName: true } })
 
-  expect(component.file).toMatch('basic')
+  expect(component.file).toEqual('basic')
 })
 
 test('server rendering', async () => {

@@ -16,10 +16,10 @@ test('runtime', async () => {
 })
 
 test('with filename', async () => {
-  const component = await load('./fixtures/basic', { assembleOptions: { includeFileName: true } })
+  const component = await load('./fixtures/basic', { filename: 'basic', assembleOptions: { includeFileName: true } })
   const exports = normalizer({ injectStyles })(component)
 
-  expect(exports.__file).toMatch('basic')
+  expect(exports.__file).toEqual('basic')
 })
 
 test('css modules / scope', async () => {
