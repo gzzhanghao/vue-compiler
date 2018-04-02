@@ -16,7 +16,7 @@ export const base: CompileOptions = {
   },
 
   assembleOptions: {
-    prefix: 'module.exports = require("vue-compiler/lib/normalizer")({})',
+    prefix: 'module.exports = require("vue-compiler/lib/normalizer").default({})',
   },
 }
 

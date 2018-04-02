@@ -278,7 +278,7 @@ interface AssembleOptions {
 
   prefix?: SourceNode|string
   // prepend to generated code, useful for specifying module normalizer
-  // defulat: module.exports = require("vue-compiler/lib/normalizer")({})
+  // defulat: 'module.exports = require("vue-compiler/lib/normalizer").default({})'
   // eg: 'return ' -> return { /* component descriptor */ }
   // eg: 'define(' -> define({ /* component descriptor */ })
 
