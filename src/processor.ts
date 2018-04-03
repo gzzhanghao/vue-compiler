@@ -1,16 +1,23 @@
 import { SFCBlock } from './types/parser'
-import { ProcessOptions } from './types/processor'
+import { ProcessOptions, BuiltInCompiler } from './types/processor'
 
-export default async function proc(item: SFCBlock, options: ProcessOptions): Promise<SFCBlock> {
+export default async function proc(item: SFCBlock, options: ProcessOptions, builtIn?: BuiltInCompiler): Promise<SFCBlock> {
   let compile = await options.getCompiler(item)
 
   if (!compile && compile !== false) {
-    compile = options.compilers[<string>item.attrs.lang] || options.compilers[item.type]
+    compile = options.compilers[(<string>item.attrs.lang)] || options.compilers[item.type]
   }
 
   if (!compile) {
-    return item
+    return builtInProxy(item)
   }
 
-  return compile(item) || item
+  return (await compile(item, builtInProxy)) || item
+
+  async function builtInProxy(replace: SFCBlock = item) {
+    if (!builtIn) {
+      return replace
+    }
+    return builtIn(replace)
+  }
 }

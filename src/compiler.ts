@@ -17,9 +17,11 @@ import {
 } from './types/compiler'
 
 export default async function compile(content: string, options: CompileOptions = {}): Promise<CompileResult> {
-  options = defaultsDeep({}, options, defaultOptions[options.mode || 'production'], {
-    scopeId: genId(options.filename),
-  })
+  options = defaultsDeep({}, options, defaultOptions[options.mode || 'production'])
+
+  if (options.scopeId == null) {
+    options.scopeId = genId(options.filename)
+  }
 
   const sourceMapOptions = {
     filename: options.filename,
@@ -29,20 +31,25 @@ export default async function compile(content: string, options: CompileOptions =
 
   const components: SFCDescriptor = parse(content, { ...sourceMapOptions, ...options.parseOptions })
 
-  const promises: Array<Promise<any>> = [null, null, null]
+  const promises: Array<Promise<any>> = []
 
   if (components.script) {
     promises[0] = proc(components.script, options.processOptions)
   }
 
   if (components.template) {
-    promises[1] = proc(components.template, options.processOptions)
-      .then((item) => compileTemplate(item, { ...options.templateOptions, ssrOptimize: options.ssrOptimize }))
+    promises[1] = proc(components.template, options.processOptions, async (item) => compileTemplate(item, {
+      ...options.templateOptions,
+      ssrOptimize: options.ssrOptimize,
+    }))
   }
 
   promises[2] = Promise.all(components.styles.map((style) => {
-    return proc(style, options.processOptions)
-      .then((item) => compileStyle(item, { scopeId: options.scopeId, ...sourceMapOptions, ...options.styleOptions }))
+    return proc(style, options.processOptions, (item) => compileStyle(item, {
+      scopeId: options.scopeId,
+      ...sourceMapOptions,
+      ...options.styleOptions,
+    }))
   }))
 
   promises[3] = Promise.all(components.customBlocks.map((block) => {

@@ -93,7 +93,10 @@ interface ProcessOptions {
   // compilers for specific blocks and langs
 }
 
-type CustomCompiler = (block: SFCBlock) => SFCBlock|void
+type BuiltInCompiler = (block?: SFCBlock) => Promise<SFCBlock>
+// built in compiler that returns a SFCStyleBlock or SFCTemplateBlock
+
+type CustomCompiler = (block: SFCBlock, builtIn: BuiltInCompiler) => void|SFCBlock|Promise<void|SFCBlock>
 // custom compiler that replaces block's properties or
 // returns a new block to replace the origin block
 ```
