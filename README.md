@@ -14,13 +14,16 @@ const { code, map } = await compile(source)
 
 ## Table of Contents
 
-- [API](#api)
-  - [compile(source: string, options: CompileOptions): CompileResult](#compilesource-string-options-compileoptions-compileresult)
-  - [parse(source: string, options: ParseOptions): SFCDescriptor](#parsesource-string-options-parseoptions-sfcdescriptor)
-  - [compileTemplate(block: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock](#compiletemplateblock-sfcblock-options-compiletemplateoptions-sfctemplateblock)
-  - [compileStyle(block: SFCBlock, options: CompileStyleOptions): Promise](#compilestyleblock-sfcblock-options-compilestyleoptions-promisesfcstyleblock)
-  - [assemble(components: AssembleInput, options: AssembleOptions): AssembleResult](#assemblecomponents-assembleinput-options-assembleoptions-assembleresult)
-  - [normalize(runtime: NormalizerRuntime): (component: ComponentDescriptor) => any](#normalizeruntime-normalizerruntime-component-componentdescriptor--any)
+- [vue-compiler](#vue-compiler)
+  - [Basic Usage](#basic-usage)
+  - [Table of Contents](#table-of-contents)
+  - [API](#api)
+    - [compile(source: string, options: CompileOptions): CompileResult](#compilesource-string-options-compileoptions-compileresult)
+    - [parse(source: string, options: ParseOptions): SFCDescriptor](#parsesource-string-options-parseoptions-sfcdescriptor)
+    - [compileTemplate(block: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock](#compiletemplateblock-sfcblock-options-compiletemplateoptions-sfctemplateblock)
+    - [compileStyle(block: SFCBlock, options: CompileStyleOptions): Promise&lt;SFCStyleBlock&gt;](#compilestyleblock-sfcblock-options-compilestyleoptions-promiseltsfcstyleblockgt)
+    - [assemble(components: AssembleInput, options: AssembleOptions): AssembleResult](#assemblecomponents-assembleinput-options-assembleoptions-assembleresult)
+    - [normalize(runtime: NormalizerRuntime): (component: ComponentDescriptor) => any](#normalizeruntime-normalizerruntime-component-componentdescriptor--any)
 
 ## API
 
@@ -187,6 +190,9 @@ interface CompileTemplateOptions {
   ssrOptimize?: boolean // default: CompileOptions.ssrOptimize
   // generate SSR optimized code
 
+  compile?: (template: string, options: Object) => any // default: VueTemplateCompiler.compile
+  // custom compile function
+
   compileOptions?: Object
   // compile options passed to `VueTemplateCompiler.compile`
 }
@@ -198,6 +204,9 @@ interface SFCTemplateBlock extends SFCBlock {
 
   tips?: Array<any>
   // error from `vue-template-compiler`
+
+  compileResult?: any
+  // result from compile method
 
   functional: boolean
   // whether the template is functional

@@ -8,7 +8,6 @@ import {
 import { SFCBlock } from './types/parser'
 
 const transpile = require('vue-template-es2015-compiler')
-const VueCompiler = require('vue-template-compiler')
 
 export default function compileTemplate(item: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock {
   const block: SFCTemplateBlock = { ...item, functional: !!item.attrs.functional }
@@ -17,10 +16,16 @@ export default function compileTemplate(item: SFCBlock, options: CompileTemplate
     return block
   }
 
-  const method = options.ssrOptimize ? 'ssrCompile' : 'compile'
-  const fnArgs = block.functional ? '_h,_vm' : ''
+  let compile = options.compile
 
-  const result = VueCompiler[method](block.sourceNode.toString(), options.compileOptions)
+  if (!compile) {
+    compile = require('vue-template-compiler')[options.ssrOptimize ? 'ssrCompile' : 'compile']
+  }
+
+  const fnArgs = block.functional ? '_h,_vm' : ''
+  const result = compile(block.sourceNode.toString(), options.compileOptions)
+
+  block.compileResult = result
 
   if (result.errors && result.errors.length) {
     block.errors = result.errors
