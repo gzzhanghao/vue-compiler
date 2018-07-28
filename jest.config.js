@@ -9,4 +9,5 @@ module.exports = {
     'json',
     'node',
   ],
+  testURL: 'http://localhost/',
 }

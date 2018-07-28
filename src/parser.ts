@@ -52,7 +52,7 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
   block.sourceNode.setSourceContent(options.filename, options.source)
 
   if (block.src) {
-    block.sourceNode.add(new SourceNode(startLine + 1, 0, options.filename, `require(${JSON.stringify(block.src)})`))
+    block.sourceNode.add(new SourceNode(startLine + 1, 0, options.filename, `require(${JSON.stringify(block.src)})`) as any)
     return block
   }
 
@@ -66,8 +66,8 @@ function bindSFCBlock(vueBlock: VueSFCBlock, options: SFCBlockOptions, index?: n
       startLine + index + 1,
       index ? 0 : block.loc.start.column,
       options.filename,
-      [line, '\n']
-    ))
+      [line, '\n'] as any
+    ) as any)
   })
 
   return block

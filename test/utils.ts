@@ -5,7 +5,7 @@ import defaultsDeep = require('lodash.defaultsdeep')
 
 const { promisify } = require('es6-promisify')
 
-import compiler from '../src'
+import * as compiler from '../src'
 import { CompileOptions, CompileResult } from '../src/types/compiler'
 
 export interface LoadOptions extends CompileOptions {
@@ -16,15 +16,11 @@ export interface LoadOptions extends CompileOptions {
 const readFile = promisify(fs.readFile)
 
 export async function compile(filePath: string, options: CompileOptions = {}): Promise<CompileResult> {
-  let filename = path.resolve(__dirname, filePath)
+  return compiler.compile(await readComponent(filePath), options)
+}
 
-  if (!filename.endsWith('.vue')) {
-    filename += '.vue'
-  }
-
-  const code = await readFile(filename, 'utf-8')
-
-  return compiler(code, options)
+export async function compileSync(filePath: string, options: CompileOptions = {}): Promise<CompileResult> {
+  return compiler.compileSync(await readComponent(filePath), options)
 }
 
 export async function load(filename: string, options: LoadOptions = {}): Promise<any> {
@@ -40,4 +36,14 @@ export function evaluate(factory: Function): any {
   const mod = { exports: {} }
   factory(mod, mod.exports)
   return mod.exports
+}
+
+function readComponent(filePath: string) {
+  let filename = path.resolve(__dirname, filePath)
+
+  if (!filename.endsWith('.vue')) {
+    filename += '.vue'
+  }
+
+  return readFile(filename, 'utf-8')
 }

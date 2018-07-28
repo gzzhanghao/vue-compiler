@@ -1,5 +1,6 @@
 import {
   compile,
+  compileSync,
   load,
   evaluate,
 } from './utils'
@@ -14,6 +15,13 @@ test('basic compiler', async () => {
   expect(component.tips).toBeFalsy()
   expect(component.errors).toBeFalsy()
   expect(component.functional).toBeFalsy()
+})
+
+test('sync compiler', async () => {
+  const asyncResult = await compile('./fixtures/basic', { sourceMaps: true })
+  const syncResult = await compileSync('./fixtures/basic', { sourceMaps: true })
+
+  expect(syncResult).toEqual(asyncResult)
 })
 
 test('report errors', async () => {

@@ -1,11 +1,7 @@
 import { SourceNode } from 'source-map'
 
-import {
-  CompileTemplateOptions,
-  SFCTemplateBlock,
-} from './types/template-compiler'
-
 import { SFCBlock } from './types/parser'
+import { CompileTemplateOptions, SFCTemplateBlock } from './types/template-compiler'
 
 const transpile = require('vue-template-es2015-compiler')
 

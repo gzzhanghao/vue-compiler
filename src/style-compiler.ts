@@ -1,30 +1,35 @@
 import postcssScopeId from '@vue/component-compiler-utils/dist/stylePlugins/scoped'
-import { ProcessOptions } from 'postcss'
 
 import {
-  SourceNode,
-  SourceMapConsumer,
-  RawIndexMap,
-} from 'source-map'
+  ProcessOptions,
+  Result,
+  LazyResult
+} from 'postcss'
+
+import { SourceNode, SourceMapConsumer } from 'source-map'
 
 import postcss = require('postcss')
 
 import { SFCBlock } from './types/parser'
 import { Dictionary } from './types/lib'
-
-import {
-  CompileStyleOptions,
-  SFCStyleBlock,
-} from './types/style-compiler'
+import { CompileStyleOptions, SFCStyleBlock } from './types/style-compiler'
 
 const postcssModules = require('postcss-modules')
 const postcssComposition = require('postcss-plugin-composition')
 
-export default async function compileStyle(item: SFCBlock, options: CompileStyleOptions): Promise<SFCStyleBlock> {
+export async function compileStyle(item: SFCBlock, options: CompileStyleOptions): Promise<SFCStyleBlock> {
   const block: SFCStyleBlock = { ...item, scoped: !!item.attrs.scoped }
+  return normalizeResult(block, options, await compile(block, options))
+}
 
+export function compileStyleSync(item: SFCBlock, options: CompileStyleOptions): SFCStyleBlock {
+  const block: SFCStyleBlock = { ...item, scoped: !!item.attrs.scoped }
+  return normalizeResult(block, options, compile(block, options))
+}
+
+function compile(block: SFCStyleBlock, options: CompileStyleOptions): LazyResult | void {
   if (block.src) {
-    return block
+    return
   }
 
   const plugins = options.postcssPlugins.slice()
@@ -49,25 +54,28 @@ export default async function compileStyle(item: SFCBlock, options: CompileStyle
   }
 
   if (!plugins.length) {
-    return block
+    return
   }
 
   const postcssOptions: ProcessOptions = { from: options.filename, to: options.filename }
 
   if (options.sourceMaps) {
-    postcssOptions.map = { inline: false, annotation: false, prev: block.sourceNode.toStringWithSourceMap({ file: options.filename, sourceRoot: options.sourceRoot }).map.toJSON() }
+    const inputSourceMap: any = block.sourceNode.toStringWithSourceMap({ file: options.filename, sourceRoot: options.sourceRoot }).map
+    postcssOptions.map = { inline: false, annotation: false, prev: inputSourceMap.toJSON() }
   }
 
-  const { css, map } = await postcss(plugins).process(block.sourceNode.toString(), postcssOptions)
+  return postcss(plugins).process(block.sourceNode.toString(), postcssOptions)
+}
 
-  if (!options.sourceMaps) {
-    block.sourceNode = new SourceNode(null, null, options.filename, css)
+function normalizeResult(block: SFCStyleBlock, options: CompileStyleOptions, result: LazyResult | Result | void): SFCStyleBlock {
+  if (!result) {
     return block
   }
-
-  // @ts-ignore
-  const rawSourceMap: RawIndexMap = map.toJSON()
-  block.sourceNode = SourceNode.fromStringWithSourceMap(css, await new SourceMapConsumer(rawSourceMap))
-
+  const { css, map } = result
+  if (map) {
+    block.sourceNode = SourceNode.fromStringWithSourceMap(css, new SourceMapConsumer(map.toJSON() as any))
+  } {
+    block.sourceNode = new SourceNode(null, null, options.filename, css)
+  }
   return block
 }

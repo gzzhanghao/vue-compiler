@@ -106,7 +106,7 @@ export default function assemble(components: AssembleInput, options: AssembleOpt
       }
       if (inlineStyles.length) {
         if (options.styleSourceMaps) {
-          const inlineNode = new SourceNode(null, null, options.filename, inlineStyles)
+          const inlineNode = new SourceNode(null, null, options.filename, inlineStyles as any)
           const { code, map } = inlineNode.toStringWithSourceMap(sourceMapOptions)
           rootNode.push(JSON.stringify(`${code}/*# sourceMappingURL=data:application/json;base64,${new Buffer(map.toString()).toString('base64')} */`))
         } else {
@@ -168,7 +168,7 @@ export default function assemble(components: AssembleInput, options: AssembleOpt
   let result: AssembleResult = null
 
   if (options.sourceMaps) {
-    result = new SourceNode(null, null, options.filename, rootNode).toStringWithSourceMap(sourceMapOptions)
+    result = new SourceNode(null, null, options.filename, rootNode as any).toStringWithSourceMap(sourceMapOptions)
   } else {
     result = { code: rootNode.join('') }
   }

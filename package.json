@@ -16,7 +16,7 @@
     "postcss": "^7.0.0",
     "postcss-modules": "^1.1.0",
     "postcss-plugin-composition": "^0.1.1",
-    "source-map": "^0.7.2",
+    "source-map": "^0.6.1",
     "vue-template-compiler": "^2.5.16",
     "vue-template-es2015-compiler": "^1.6.0"
   },
@@ -32,7 +32,7 @@
     "prettier": "^1.11.1",
     "ts-jest": "^23.0.1",
     "typescript": "^2.8.1",
-    "typescript-eslint-parser": "^16.0.1",
+    "typescript-eslint-parser": "^17.0.1",
     "vue": "^2.5.16"
   },
   "description": "A standalone vue component compiler"
