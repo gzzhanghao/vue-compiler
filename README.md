@@ -18,7 +18,8 @@ const { code, map } = await compile(source)
   - [Basic Usage](#basic-usage)
   - [Table of Contents](#table-of-contents)
   - [API](#api)
-    - [compile(source: string, options: CompileOptions): CompileResult](#compilesource-string-options-compileoptions-compileresult)
+    - [compile(source: string, options: CompileOptions): Promise&lt;CompileResult&gt;](#compilesource-string-options-compileoptions-promiseltcompileresultgt)
+    - [compileSync(source: string, options: CompileOptions): CompileResult](#compilesource-string-options-compileoptions-promiseltcompileresultgt)
     - [parse(source: string, options: ParseOptions): SFCDescriptor](#parsesource-string-options-parseoptions-sfcdescriptor)
     - [compileTemplate(block: SFCBlock, options: CompileTemplateOptions): SFCTemplateBlock](#compiletemplateblock-sfcblock-options-compiletemplateoptions-sfctemplateblock)
     - [compileStyle(block: SFCBlock, options: CompileStyleOptions): Promise&lt;SFCStyleBlock&gt;](#compilestyleblock-sfcblock-options-compilestyleoptions-promiseltsfcstyleblockgt)
@@ -27,7 +28,7 @@ const { code, map } = await compile(source)
 
 ## API
 
-### compile(source: string, options: CompileOptions): CompileResult
+### compile(source: string, options: CompileOptions): Promise&lt;CompileResult&gt;
 
 Compile SFC source code to a single cmd module.
 
