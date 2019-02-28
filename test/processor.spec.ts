@@ -43,7 +43,7 @@ test('custom compilers invoke built in compilers', async () => {
           block.sourceNode = new SourceNode(null, null, null, '<div>replaced</div>')
 
           const templateBlock = await builtIn(block)
-          const code = format(templateBlock.sourceNode.toString(), { parser: 'babylon', semi: false })
+          const code = format(templateBlock.sourceNode.toString(), { parser: 'babel', semi: false })
 
           block.sourceNode = new SourceNode(null, null, null, code.replace(/^\s*;/, ''))
 
