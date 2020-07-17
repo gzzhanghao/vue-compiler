@@ -74,7 +74,7 @@ function normalizeResult(block: SFCStyleBlock, options: CompileStyleOptions, res
   const { css, map } = result
   if (map) {
     block.sourceNode = SourceNode.fromStringWithSourceMap(css, new SourceMapConsumer(map.toJSON() as any))
-  } {
+  } else {
     block.sourceNode = new SourceNode(null, null, options.filename, css)
   }
   return block
