@@ -20,7 +20,7 @@
     "vue-template-es2015-compiler": "1.9.1"
   },
   "peerDependencies": {
-    "vue-template-compiler": "^2.5.16"
+    "vue-template-compiler": "^2.6.10"
   },
   "devDependencies": {
     "@types/jest": "24.0.9",
@@ -36,8 +36,8 @@
     "ts-jest": "24.0.0",
     "typescript": "3.3.3333",
     "typescript-eslint-parser": "22.0.0",
-    "vue": "^2.6.7",
-    "vue-template-compiler": "2.6.7"
+    "vue": "2.6.10",
+    "vue-template-compiler": "2.6.10"
   },
   "description": "A standalone vue component compiler"
 }
