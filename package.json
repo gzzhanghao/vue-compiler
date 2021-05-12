@@ -13,7 +13,7 @@
     "@vue/component-compiler-utils": "2.6.0",
     "hash-sum": "^1.0.2",
     "lodash.defaultsdeep": "^4.6.0",
-    "postcss": "7.0.14",
+    "postcss": "8.2.10",
     "postcss-modules": "1.4.1",
     "postcss-plugin-composition": "^0.1.1",
     "source-map": "^0.6.1",
